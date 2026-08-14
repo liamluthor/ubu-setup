@@ -174,6 +174,11 @@ is why the copy carries all 740 lines of Mozilla's localized names and
 jump-list actions; the module warns when the snap's version drifts from the
 template.
 
+That entry is installed **only** with `--apply-icons`, together with the theme
+selection. `firefox-synthwave` is a name only this theme provides, so writing
+the entry without selecting the theme points Firefox at an icon nothing can
+resolve and it loses the icon it had — worse than doing nothing.
+
 One consequence: `firefox-synthwave` is a name only this theme provides, so
 selecting a different icon theme leaves that entry pointing at nothing and
 Firefox falls back to a generic icon. `uninstall.sh` removes the entry along

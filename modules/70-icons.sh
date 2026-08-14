@@ -38,12 +38,18 @@ module_icons() {
     done < <(cd "$src" && find . -type f -printf '%P\n' | sort)
     [ $rc -ne 0 ] && return 1
 
-    _icons_firefox_entry || return 1
-
+    # The firefox override and the theme selection have to move together.
+    # firefox-synthwave is a name ONLY this theme provides, so installing the
+    # desktop entry without selecting the theme points Firefox at an icon
+    # nothing can resolve — it loses the icon it had and falls back to a
+    # generic one. Worse than doing nothing, and it looked like the installer
+    # had simply failed.
     if [ "${ICONS_APPLY:-0}" = 1 ]; then
+        _icons_firefox_entry || return 1
         _icons_apply
     else
         skip "not selecting it (pass --apply-icons to switch to it)"
+        skip "not touching firefox's desktop entry either; it needs the theme"
     fi
 }
 
