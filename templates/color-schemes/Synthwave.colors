@@ -1,0 +1,185 @@
+# Synthwave — Plasma application color scheme.
+#
+# This is the third and outermost of three independent color layers. They are
+# often confused because they all end up on screen inside the same window:
+#
+#   1. Konsole colorscheme (~/.local/share/konsole/Synthwave.colorscheme)
+#      paints ONLY the terminal grid — the text and its 16 ANSI slots.
+#   2. Aurorae theme (~/.local/share/aurorae/themes/Synthwave/)
+#      paints ONLY the title bar and window frame, drawn by KWin.
+#   3. THIS FILE paints the Qt widgets: menu bar, tool bar, tab bar,
+#      scrollbars, dialogs, context menus — every app, not just Konsole.
+#
+# The "awful gray" toolbar is BackgroundNormal under [Colors:Window]; that is
+# the single most load-bearing value here.
+#
+# Colors are R,G,B decimal — NOT hex. KConfig parses a hex string as garbage
+# and silently falls back, which reads as "my edit did nothing".
+#
+# Palette, shared with the other two layers:
+#   black    0,0,0        pink    255,59,255    pink-hi  255,123,255
+#   cyan     0,217,217    cyan-fg 0,229,229     cyan-hi  107,255,255
+#   purple   184,77,255   purple+ 208,123,255   dim      126,99,168
+#   red      255,59,59    green   59,255,158    yellow   255,216,102
+
+[General]
+ColorScheme=Synthwave
+Name=Synthwave
+shadeSortColumn=true
+
+[KDE]
+contrast=4
+
+# --- chrome: toolbars, menu bars, dialog backgrounds --------------------
+# 12,12,16 is the "extremely dark gray" — near-black, very slightly cool so
+# it reads as deliberate rather than as a failed pure black.
+[Colors:Window]
+BackgroundNormal=12,12,16
+BackgroundAlternate=20,20,26
+ForegroundNormal=0,229,229
+ForegroundInactive=126,99,168
+ForegroundActive=255,59,255
+ForegroundLink=0,217,217
+ForegroundVisited=184,77,255
+ForegroundNegative=255,59,59
+ForegroundNeutral=255,216,102
+ForegroundPositive=59,255,158
+DecorationFocus=255,59,255
+DecorationHover=0,217,217
+
+# --- content areas: lists, text views, the file dialog's file list ------
+[Colors:View]
+BackgroundNormal=0,0,0
+BackgroundAlternate=12,12,16
+ForegroundNormal=0,229,229
+ForegroundInactive=126,99,168
+ForegroundActive=255,59,255
+ForegroundLink=0,217,217
+ForegroundVisited=184,77,255
+ForegroundNegative=255,59,59
+ForegroundNeutral=255,216,102
+ForegroundPositive=59,255,158
+DecorationFocus=255,59,255
+DecorationHover=0,217,217
+
+# --- push buttons, combo boxes -----------------------------------------
+[Colors:Button]
+BackgroundNormal=24,20,32
+BackgroundAlternate=32,26,44
+ForegroundNormal=0,229,229
+ForegroundInactive=126,99,168
+ForegroundActive=255,59,255
+ForegroundLink=0,217,217
+ForegroundVisited=184,77,255
+ForegroundNegative=255,59,59
+ForegroundNeutral=255,216,102
+ForegroundPositive=59,255,158
+DecorationFocus=255,59,255
+DecorationHover=0,217,217
+
+# --- selection: purple fill, white text so it stays legible ------------
+[Colors:Selection]
+BackgroundNormal=184,77,255
+BackgroundAlternate=138,58,192
+ForegroundNormal=255,255,255
+ForegroundInactive=232,220,255
+ForegroundActive=255,255,255
+ForegroundLink=255,216,102
+ForegroundVisited=232,220,255
+ForegroundNegative=255,180,180
+ForegroundNeutral=255,232,170
+ForegroundPositive=190,255,225
+DecorationFocus=255,59,255
+DecorationHover=255,123,255
+
+# --- tooltips ----------------------------------------------------------
+[Colors:Tooltip]
+BackgroundNormal=16,16,22
+BackgroundAlternate=24,20,32
+ForegroundNormal=0,229,229
+ForegroundInactive=126,99,168
+ForegroundActive=255,59,255
+ForegroundLink=0,217,217
+ForegroundVisited=184,77,255
+ForegroundNegative=255,59,59
+ForegroundNeutral=255,216,102
+ForegroundPositive=59,255,158
+DecorationFocus=255,59,255
+DecorationHover=0,217,217
+
+# --- header/tab strip: Konsole's tab bar lands here on recent versions --
+[Colors:Header]
+BackgroundNormal=12,12,16
+BackgroundAlternate=20,20,26
+ForegroundNormal=0,229,229
+ForegroundInactive=126,99,168
+ForegroundActive=255,59,255
+ForegroundLink=0,217,217
+ForegroundVisited=184,77,255
+ForegroundNegative=255,59,59
+ForegroundNeutral=255,216,102
+ForegroundPositive=59,255,158
+DecorationFocus=255,59,255
+DecorationHover=0,217,217
+
+[Colors:Header][Inactive]
+BackgroundNormal=8,8,10
+BackgroundAlternate=12,12,16
+ForegroundNormal=126,99,168
+ForegroundInactive=90,74,114
+ForegroundActive=255,59,255
+ForegroundLink=0,217,217
+ForegroundVisited=184,77,255
+ForegroundNegative=255,59,59
+ForegroundNeutral=255,216,102
+ForegroundPositive=59,255,158
+DecorationFocus=255,59,255
+DecorationHover=0,217,217
+
+# --- complementary: full-screen / "immersive" surfaces -----------------
+[Colors:Complementary]
+BackgroundNormal=0,0,0
+BackgroundAlternate=12,12,16
+ForegroundNormal=0,229,229
+ForegroundInactive=126,99,168
+ForegroundActive=255,59,255
+ForegroundLink=0,217,217
+ForegroundVisited=184,77,255
+ForegroundNegative=255,59,59
+ForegroundNeutral=255,216,102
+ForegroundPositive=59,255,158
+DecorationFocus=255,59,255
+DecorationHover=0,217,217
+
+# --- window manager --------------------------------------------------
+# The Aurorae theme draws its own title bar, so these only matter for
+# decorations that follow the color scheme (Breeze) — kept in sync anyway
+# so switching back to Breeze doesn't look broken.
+[WM]
+activeBackground=0,0,0
+activeForeground=255,59,255
+activeBlend=255,123,255
+inactiveBackground=12,12,16
+inactiveForeground=126,99,168
+inactiveBlend=90,74,114
+
+# --- disabled / inactive effects --------------------------------------
+[ColorEffects:Disabled]
+Color=40,36,52
+ColorAmount=0
+ColorEffect=0
+ContrastAmount=0.65
+ContrastEffect=1
+IntensityAmount=0.1
+IntensityEffect=2
+
+[ColorEffects:Inactive]
+ChangeSelectionColor=true
+Color=112,111,110
+ColorAmount=0.025
+ColorEffect=2
+ContrastAmount=0.1
+ContrastEffect=2
+Enable=false
+IntensityAmount=0
+IntensityEffect=0

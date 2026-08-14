@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "KWin/Aurorae",
+    "KPlugin": {
+        "Description": "Neon-on-black window frame matching the Synthwave terminal and vim themes",
+        "EnabledByDefault": true,
+        "Id": "Synthwave",
+        "License": "GPL-2.0-or-later",
+        "Name": "Synthwave",
+        "Version": "1.0"
+    },
+    "X-KDE-PluginInfo-Category": "Window Decoration"
+}

@@ -1,0 +1,111 @@
+# ==========================================================
+# synthwave-shell.bashrc
+# Source this from ~/.bashrc:
+#     [ -f ~/.synthwave-shell.bashrc ] && . ~/.synthwave-shell.bashrc
+# ==========================================================
+
+# ----------------------------------------------------------
+# palette (truecolor, independent of the 16-color slots)
+# ----------------------------------------------------------
+SW_PINK=$'\e[38;2;255;59;255m'
+SW_PINK_HI=$'\e[1;38;2;255;59;255m'
+SW_PINK_LO=$'\e[38;2;255;123;255m'
+SW_CYAN=$'\e[38;2;0;217;217m'
+SW_CYAN_HI=$'\e[1;38;2;107;255;255m'
+SW_CYAN_LO=$'\e[38;2;0;229;229m'
+SW_PURPLE=$'\e[38;2;184;77;255m'
+SW_PURPLE_HI=$'\e[38;2;208;123;255m'
+SW_RED=$'\e[1;38;2;255;59;59m'
+SW_GREEN=$'\e[38;2;59;255;158m'
+SW_DIM=$'\e[38;2;126;99;168m'
+SW_OFF=$'\e[0m'
+
+# ----------------------------------------------------------
+# man / less colors
+# ----------------------------------------------------------
+# GROFF_NO_SGR is required on man-db systems. Without it groff emits
+# its own SGR escapes and LESS_TERMCAP is ignored entirely.
+export GROFF_NO_SGR=1
+
+export LESS_TERMCAP_mb="$SW_PINK_HI"                     # blink     -> pink
+export LESS_TERMCAP_md="$SW_PINK_HI"                     # bold      -> pink
+export LESS_TERMCAP_me="$SW_OFF"                         # end bold
+export LESS_TERMCAP_so=$'\e[38;2;0;0;0;48;2;0;217;217m'  # standout  -> black on cyan
+export LESS_TERMCAP_se="$SW_OFF"                         # end standout
+export LESS_TERMCAP_us=$'\e[4;38;2;208;123;255m'         # underline -> purple
+export LESS_TERMCAP_ue="$SW_OFF"                         # end underline
+
+export LESS='-R -M -i'
+export PAGER=less
+export MANPAGER='less -R -M -i'
+
+# ----------------------------------------------------------
+# git branch, empty outside a repo
+# ----------------------------------------------------------
+_sw_git() {
+    local b
+    b=$(git symbolic-ref --short HEAD 2>/dev/null) || \
+    b=$(git rev-parse --short HEAD 2>/dev/null) || return
+    if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+        printf ' \001%s\002(\001%s\002%s\001%s\002*)' "$SW_DIM" "$SW_PINK_LO" "$b" "$SW_DIM"
+    else
+        printf ' \001%s\002(\001%s\002%s\001%s\002)' "$SW_DIM" "$SW_CYAN" "$b" "$SW_DIM"
+    fi
+}
+
+# ----------------------------------------------------------
+# prompt: single line
+#   pink user, purple separators, cyan host, bright cyan path
+# ----------------------------------------------------------
+_sw_prompt() {
+    local rc=$?
+    local sig="$SW_PINK_HI"
+    [ $rc -ne 0 ] && sig="$SW_RED"
+    [ "$EUID" -eq 0 ] && sig="$SW_RED"
+
+    local ident="$SW_PINK_HI"
+    [ "$EUID" -eq 0 ] && ident="$SW_RED"
+
+    PS1="\[${ident}\]spatial\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h\[${SW_PURPLE}\]:\[${SW_CYAN_LO}\]\w"
+    PS1+="$(_sw_git | tr -d '\001\002')"
+    PS1+="\[${sig}\] \$\[${SW_OFF}\] "
+}
+PROMPT_COMMAND=_sw_prompt
+
+# ----------------------------------------------------------
+# prompt: two line variant
+# Comment out PROMPT_COMMAND above and uncomment this block.
+#
+# _sw_prompt2() {
+#     local rc=$?
+#     local arrow="$SW_PINK_HI"
+#     [ $rc -ne 0 ] && arrow="$SW_RED"
+#     PS1="\[${SW_PURPLE}\]\n\[${SW_PINK}\]\u\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h"
+#     PS1+="\[${SW_PURPLE}\] in \[${SW_CYAN_LO}\]\w"
+#     PS1+="$(_sw_git | tr -d '\001\002')"
+#     PS1+="\n\[${arrow}\]\$\[${SW_OFF}\] "
+# }
+# PROMPT_COMMAND=_sw_prompt2
+# ----------------------------------------------------------
+
+# continuation and select prompts
+PS2="\[${SW_PURPLE}\]... \[${SW_OFF}\]"
+PS3="\[${SW_CYAN}\]?> \[${SW_OFF}\]"
+PS4="\[${SW_DIM}\]+ \[${SW_OFF}\]"
+
+# ----------------------------------------------------------
+# ls / tree colors
+# ----------------------------------------------------------
+export LS_COLORS='rs=0:di=1;36:ln=1;35:mh=00:pi=33:so=1;35:do=1;35:bd=33;40:cd=33;40:or=1;31:mi=1;31:su=37;41:sg=30;43:ca=30;41:tw=30;46:ow=1;36:st=37;44:ex=1;35:*.tar=35:*.tgz=35:*.zip=35:*.gz=35:*.bz2=35:*.xz=35:*.zst=35:*.7z=35:*.rpm=35:*.deb=35:*.jpg=1;33:*.png=1;33:*.gif=1;33:*.svg=1;33:*.mp4=1;33:*.mkv=1;33:*.pdf=1;33:*.md=1;36:*.txt=36:*.log=90:*.json=1;33:*.yaml=1;33:*.yml=1;33:*.sh=1;35:*.py=1;35:*.tf=1;35:*.tsx=1;35:*.ts=1;35'
+
+export TREE_COLORS="$LS_COLORS"
+
+alias ls='ls --color=auto'
+alias ll='ls -lAh --color=auto'
+alias grep='grep --color=auto'
+
+# ----------------------------------------------------------
+# grep match highlight
+# ----------------------------------------------------------
+export GREP_COLORS='ms=1;35:mc=1;35:sl=:cx=:fn=1;36:ln=35:bn=35:se=90'
+

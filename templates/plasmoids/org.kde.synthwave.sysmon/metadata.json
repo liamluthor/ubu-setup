@@ -1,0 +1,22 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "spatialthreat"
+            }
+        ],
+        "Category": "System Information",
+        "Description": "htop-style CPU, memory and network metrics in the Synthwave palette",
+        "EnabledByDefault": true,
+        "FormFactors": [
+            "desktop"
+        ],
+        "Icon": "utilities-system-monitor",
+        "Id": "org.kde.synthwave.sysmon",
+        "License": "MIT",
+        "Name": "Synthwave System Monitor",
+        "Version": "1.0"
+    },
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

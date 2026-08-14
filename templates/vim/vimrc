@@ -1,0 +1,54 @@
+" ==========================================================
+" vimrc  ->  ~/.vimrc
+" Managed by ubu-setup. Edit the template in the repo, not the symlink target.
+"
+" Merged from the two files that were live on the source box:
+"   ~/.vimrc       -> termguicolors + synthwave
+"   ~/.vimrc-orig  -> defaults.vim, mouse/clipboard/paste handling
+" Every option that is not universally available is feature-guarded so this
+" file loads clean on a stock Vim or a headless box.
+" ==========================================================
+
+" Load Ubuntu/Debian's stock sensible defaults first — this is what a fresh
+" install without a ~/.vimrc gets, and it's what enables clean bracketed paste
+" (right-click / Ctrl+Shift+V paste with no auto-indent staircase).
+runtime! defaults.vim
+
+" --- our overrides, applied AFTER the defaults ---
+
+" defaults.vim turns on 'mouse=a', which makes vim grab the mouse and hijacks
+" the terminal's right-click "Paste". Give the mouse back to the terminal.
+set mouse=
+
+" Use the X11 clipboard, which is the one VirtualBox's VBoxClient --clipboard
+" bridges to the host. (GNOME Wayland's native clipboard is NOT bridged.)
+" 'clipmethod' is new in Vim 9.1.1443; older builds pick x11 on their own.
+if exists('+clipmethod')
+  set clipmethod=x11
+endif
+
+" Make ordinary y/p use the system clipboard (the + register) automatically.
+" Only meaningful in a build with +clipboard; without it this errors.
+if has('clipboard')
+  set clipboard=unnamedplus
+endif
+
+" Safety fallback: F2 toggles paste mode if any terminal ever misbehaves.
+" 'pastetoggle' is deprecated in recent Vim and gone in Neovim (which relies on
+" bracketed paste instead), so only set it where it still exists.
+if exists('+pastetoggle')
+  set pastetoggle=<F2>
+endif
+
+" --- colors ---
+" 24-bit color. Requires a truecolor terminal; the Konsole "Synthwave" profile
+" installed by ubu-setup is one. Guarded so a 16-color tty still gets the
+" cterm fallbacks baked into the colorscheme.
+if has('termguicolors') && ($COLORTERM ==# 'truecolor' || $COLORTERM ==# '24bit')
+  set termguicolors
+endif
+
+syntax on
+
+" Never let a missing colorscheme abort the rest of the vimrc.
+silent! colorscheme synthwave
