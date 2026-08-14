@@ -2,7 +2,7 @@
 # 70-icons — the Synthwave icon theme, and the one desktop entry that needs
 # patching to reach it.
 #
-# The theme overrides four names and inherits breeze-dark for everything else,
+# The theme overrides five names and inherits breeze-dark for everything else,
 # so a missing icon is a fall-through rather than a blank. Regenerate the
 # artwork with tools/gen-icons.py; do not hand-edit templates/icons/.
 #
@@ -16,7 +16,9 @@
 # theme can ever override it. So a copy of that entry, identical but for the
 # Icon line, is installed into ~/.local/share/applications where it shadows
 # the snap's. Dolphin and VS Code need no such thing: they declare ordinary
-# icon names (org.kde.dolphin, vscode) that a theme outranks.
+# icon names that a theme outranks. Dolphin is shipped under two of them
+# though — org.kde.dolphin on some builds, the generic system-file-manager on
+# others — so the theme provides both.
 
 ICONS_THEME_NAME="Synthwave"
 

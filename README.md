@@ -132,7 +132,7 @@ silently never draws. That failure mode is why the checker exists.
 
 ## Icons
 
-`templates/icons/Synthwave/` is a deliberately tiny theme: it overrides four
+`templates/icons/Synthwave/` is a deliberately tiny theme: it overrides five
 names and sets `Inherits=breeze-dark`, so everything it does not define falls
 through rather than coming up blank. Regenerate it, never hand-edit it:
 
@@ -146,19 +146,22 @@ ramp — per-size because breeze hand-hints its small sizes and those hints are
 worth keeping. `apps/scalable/<name>.svg` reuses breeze's 48px terminal
 chassis — same rect, same gradient coordinates, same bevel — and swaps only
 the mark inside it. That is what keeps the set looking like a set instead of
-four separately-drawn icons.
+separately-drawn icons.
 
 The marks are single-path monochrome sources where one exists:
 `firefox-symbolic` from hicolor, `system-file-manager-symbolic` from breeze.
 VS Code ships only a 1024px PNG, so its ribbon is authored in the generator.
 Glyph bounding boxes are measured by rendering each path and reading the alpha
 extents, not by parsing path data — exact for arbitrary curves, and it is what
-centres all four marks identically.
+centres every mark identically.
 
 ### Why Firefox needs a desktop entry and the others do not
 
-Dolphin and VS Code declare ordinary icon names (`org.kde.dolphin`, `vscode`),
-and an icon theme outranks both hicolor and `/usr/share/pixmaps`. Firefox's
+Dolphin and VS Code declare ordinary icon names, and an icon theme outranks
+both hicolor and `/usr/share/pixmaps`. Dolphin is shipped under two names —
+`org.kde.dolphin` on some builds, the generic `system-file-manager` on others —
+so the theme provides both, pointing at the same artwork. Miss one and the file
+manager is the single entry in the panel that stays Breeze. Firefox's
 snap entry instead hardcodes
 
 ```

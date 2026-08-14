@@ -5,7 +5,7 @@ Run this, don't hand-edit the output:
 
     python3 tools/gen-icons.py [outdir]
 
-The theme is deliberately tiny — it overrides four names and inherits
+The theme is deliberately tiny — it overrides five names and inherits
 breeze-dark for everything else. Two kinds of icon come out of it:
 
   apps/<size>/utilities-terminal.svg   breeze-dark's own terminal icon with
@@ -178,9 +178,15 @@ def main():
         print(f'  apps/{s}/utilities-terminal.svg')
 
     # --- scalable: shared chassis, one glyph each ---
+    # Dolphin does not declare a single icon name across packagings: some
+    # builds use the reverse-DNS id, others the generic freedesktop name. Ship
+    # both, pointing at the same artwork, or the file manager is the one entry
+    # in the panel that stays Breeze while everything else themes.
+    dolphin_glyph = path_of(FILEMANAGER_SYMBOLIC)
     glyphs = {
         'firefox-synthwave': path_of(FIREFOX_SYMBOLIC),
-        'org.kde.dolphin': path_of(FILEMANAGER_SYMBOLIC),
+        'org.kde.dolphin': dolphin_glyph,
+        'system-file-manager': dolphin_glyph,
         'vscode': (VSCODE_D, [0, 0, 100, 100]),
     }
     os.makedirs(f'{out}/apps/scalable', exist_ok=True)
