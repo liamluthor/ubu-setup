@@ -1,0 +1,144 @@
+/* Synthwave chrome for Firefox.
+ *
+ * Colours are the same values as templates/color-schemes/Synthwave.colors,
+ * so the browser frame matches Konsole, the window decoration, and the Qt
+ * widget chrome rather than approximating them.
+ *
+ * This styles Firefox's CHROME only — tabs, toolbars, menus. Web page content
+ * is a separate sheet (userContent.css) and is deliberately left alone.
+ *
+ * userChrome.css is not a supported API. Mozilla changes internal element ids
+ * between releases, so a Firefox update can quietly stop part of this from
+ * applying. When that happens the browser still works, it just looks wrong in
+ * one spot; find the new id with the Browser Toolbox (Ctrl+Shift+Alt+I).
+ */
+
+/* ==== CANARY — temporary, remove once the question is answered ====
+ * Deliberately hideous and placed immediately after @namespace so it applies
+ * even if a later rule fails to parse. If the tab strip is NOT screaming
+ * magenta after a restart, the sheet is not being loaded at all and no amount
+ * of selector fixing will help. */
+/* ==== end canary ==== */
+
+
+:root {
+
+  /* Firefox's own theme variables. Setting these first means much of the
+   * chrome recolours without per-widget rules, which is what survives an
+   * update best — the variables are far more stable than element ids. */
+  --lwt-accent-color:            #0c0c10 !important;
+  --lwt-text-color:              #00e5e5 !important;
+  --toolbar-bgcolor:             #14141a !important;
+  --toolbar-color:               #00e5e5 !important;
+  --toolbar-field-background-color: #000000 !important;
+  --toolbar-field-color:         #00e5e5 !important;
+  --toolbar-field-focus-background-color: #000000 !important;
+  --toolbar-field-focus-color:   #00e5e5 !important;
+  --toolbar-field-border-color:  #2a1f3d !important;
+  --tab-selected-bgcolor:        #14141a !important;
+  --tab-selected-textcolor:      #ff3bff !important;
+  --lwt-toolbarbutton-icon-fill: #00e5e5 !important;
+  --lwt-toolbarbutton-hover-background: #1d1526 !important;
+  --lwt-toolbarbutton-active-background: #b84dff !important;
+  --arrowpanel-background:       #0c0c10 !important;
+  --arrowpanel-color:            #00e5e5 !important;
+  --arrowpanel-border-color:     #2a1f3d !important;
+  --panel-separator-color:       #2a1f3d !important;
+  --focus-outline-color:         #ff3bff !important;
+}
+
+/* ---- window frame and tab strip ---- */
+#navigator-toolbox {
+  background-color: #0c0c10 !important;
+  border-bottom: 1px solid #2a1f3d !important;
+}
+#titlebar,
+#TabsToolbar,
+#nav-bar,
+#PersonalToolbar {
+  background-color: #0c0c10 !important;
+  color: #00e5e5 !important;
+}
+#nav-bar {
+  background-color: #14141a !important;
+  border-top: 1px solid #2a1f3d !important;
+}
+
+/* ---- tabs ---- */
+.tabbrowser-tab .tab-background {
+  background-color: transparent !important;
+  border-radius: 2px 2px 0 0 !important;
+}
+.tabbrowser-tab[selected] .tab-background {
+  background-color: #14141a !important;
+  border-top: 2px solid #ff3bff !important;
+}
+.tabbrowser-tab:not([selected]):hover .tab-background {
+  background-color: #16111f !important;
+}
+.tabbrowser-tab .tab-label { color: #7e63a8 !important; }
+.tabbrowser-tab[selected] .tab-label {
+  color: #ff3bff !important;
+  font-weight: 600 !important;
+}
+.tabbrowser-tab[pending] .tab-label { color: #4a3a5e !important; }
+
+/* ---- address bar ---- */
+#urlbar-background,
+#searchbar {
+  background-color: #000000 !important;
+  border: 1px solid #2a1f3d !important;
+}
+#urlbar[focused] > #urlbar-background {
+  border-color: #ff3bff !important;
+}
+#urlbar-input, .searchbar-textbox { color: #00e5e5 !important; }
+#urlbar-input::selection { background-color: #b84dff !important; color: #fff !important; }
+
+/* The dropdown of suggestions, which is its own panel and misses the
+ * toolbar-field variables above. */
+.urlbarView {
+  background-color: #0c0c10 !important;
+  border-top: 1px solid #2a1f3d !important;
+}
+.urlbarView-row[selected], .urlbarView-row:hover {
+  background-color: #1d1526 !important;
+}
+.urlbarView-title { color: #00e5e5 !important; }
+.urlbarView-url, .urlbarView-title-separator { color: #7e63a8 !important; }
+
+/* ---- menus and popups ----
+ * These looked unstyled for a long time, which read like Firefox handing
+ * menus to GTK. It was not: widget.gtk.native-context-menus already defaults
+ * to false here, so these are XUL popups and always were reachable. The rules
+ * were dead because they referenced var(--sw-*) custom properties that never
+ * resolved in this document — every such declaration is dropped silently
+ * rather than falling back. Literal colours throughout, for that reason. */
+menupopup, panel {
+  --panel-background: #0c0c10 !important;
+  --panel-color: #00e5e5 !important;
+}
+menupopup {
+  background-color: #0c0c10 !important;
+  color: #00e5e5 !important;
+  border: 1px solid #2a1f3d !important;
+}
+menupopup > menuitem, menupopup > menu { color: #00e5e5 !important; }
+menupopup > menuitem[_moz-menuactive], menupopup > menu[_moz-menuactive] {
+  background-color: #b84dff !important;
+  color: #ffffff !important;
+}
+menuseparator { border-color: #2a1f3d !important; }
+
+/* ---- findbar and sidebar ---- */
+findbar {
+  background-color: #14141a !important;
+  color: #00e5e5 !important;
+  border-top: 1px solid #2a1f3d !important;
+}
+#sidebar-box, #sidebar-header {
+  background-color: #0c0c10 !important;
+  color: #00e5e5 !important;
+}
+#sidebar-header { border-bottom: 1px solid #2a1f3d !important; }
+

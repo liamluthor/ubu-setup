@@ -20,7 +20,7 @@ export REPO_DIR
 # shellcheck source=lib/common.sh
 . "$REPO_DIR/lib/common.sh"
 
-MODULES=(packages bash vim konsole aurorae colors icons widget)
+MODULES=(packages bash vim konsole aurorae colors icons firefox widget)
 SELECTED=()
 
 usage() {
@@ -126,6 +126,7 @@ to see it:
   vim      vim anything.ts
   konsole  restart konsole; new windows use the Synthwave profile
   icons    restart plasmashell, or log out, to repaint the panel
+  firefox  fully quit firefox and start it again
   widget   restart plasmashell; it does not reload QML on its own
 EOF
 fi

@@ -87,6 +87,26 @@ if [ -f "$_ff_dst" ] && [ -f "$_ff_src" ] && cmp -s "$_ff_dst" "$_ff_src"; then
     OWNED_TPL["$_ff_dst"]="$_ff_src"
 fi
 
+# Firefox's two files live in a profile whose directory name is random, so it
+# has to be discovered the same way the module discovers it.
+for _root in "$HOME/snap/firefox/common/.mozilla/firefox" "$HOME/.mozilla/firefox"; do
+    [ -f "$_root/profiles.ini" ] || continue
+    _pp="$(awk -F= '
+        /^\[/                     { inp = ($0 ~ /^\[Profile/); p = ""; d = 0 }
+        inp && $1 == "Path"        { p = $2 }
+        inp && $1 == "Default"     { d = ($2 == 1) }
+        inp && p != "" && d        { print p; exit }
+    ' "$_root/profiles.ini")"
+    [ -n "$_pp" ] || continue
+    case "$_pp" in /*) _pd="$_pp" ;; *) _pd="$_root/$_pp" ;; esac
+    for _f in chrome/userChrome.css user.js; do
+        if [ -f "$_pd/$_f" ]; then
+            OWNED+=("$_pd/$_f")
+            OWNED_TPL["$_pd/$_f"]="$TEMPLATE_DIR/firefox/$(basename "$_f")"
+        fi
+    done
+done
+
 # The plasmoid is a KPackage directory, same shape as the icon theme.
 _widget_dir="${XDG_DATA_HOME:-$HOME/.local/share}/plasma/plasmoids/org.kde.synthwave.sysmon"
 if [ -d "$_widget_dir" ]; then

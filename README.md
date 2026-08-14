@@ -32,6 +32,8 @@ Then `exec bash -l`, and restart Konsole.
 | `~/.local/share/icons/Synthwave/` | icon theme: terminal, dolphin, firefox, vscode | **copy** |
 | `~/.local/share/applications/firefox_firefox.desktop` | shadows the snap's entry to reach a themed icon | **copy** |
 | `~/.config/kdeglobals` | `Icons/Theme` — only with `--apply-icons` | keyed edit |
+| `<firefox profile>/chrome/userChrome.css` | synthwave browser chrome | **copy** |
+| `<firefox profile>/user.js` | the pref that makes Firefox read it | **copy** |
 | `~/.local/share/plasma/plasmoids/org.kde.synthwave.sysmon/` | desktop system-monitor widget | **copy** |
 | apt | `vim less groff-base git fonts-hack konsole` | only if missing |
 
@@ -52,7 +54,7 @@ Then `exec bash -l`, and restart Konsole.
 -l, --list          list modules
 ```
 
-Modules: `packages`, `bash`, `vim`, `konsole`, `aurorae`, `colors`, `icons`, `widget`.
+Modules: `packages`, `bash`, `vim`, `konsole`, `aurorae`, `colors`, `icons`, `firefox`, `widget`.
 
 ## Four layers, not one
 
@@ -203,6 +205,48 @@ KIconTheme only searches directories the index declares, so a file in an
 undeclared directory is invisible; and a declared directory that is missing or
 empty is a dead end. Neither is logged. `_icons_validate` in the module checks
 both directions before installing anything.
+
+## Firefox chrome
+
+`templates/firefox/` restyles the browser frame — tabs, toolbars, address bar,
+menus — in the same palette as everything else. Page content is deliberately
+untouched.
+
+A static theme (`.xpi`) is the supported route and it is not usable here:
+release Firefox installs only extensions signed by Mozilla, and an unsigned
+local theme can only be side-loaded temporarily through `about:debugging`,
+disappearing on restart. So `userChrome.css` it is, with
+`toolkit.legacyUserProfileCustomizations.stylesheets` to make Firefox read it.
+
+The pref goes in **`user.js`, not `prefs.js`**: Firefox rewrites `prefs.js` on
+exit and discards anything written there while it is running, whereas `user.js`
+is re-read at every startup.
+
+The profile directory name is random per install, so the module finds it by
+parsing `profiles.ini` for the `[Profile*]` section with `Default=1` — checking
+the snap location first, then `~/.mozilla/firefox`. Run Firefox once before
+this module, or there is no profile to write into and it skips.
+
+### The trap that ate an evening
+
+**`var()` custom properties do not resolve in the chrome document.** Define
+`--my-colour` on `:root`, use `var(--my-colour)` in a rule below, and the rule
+silently does nothing — an unresolved `var()` voids the whole declaration
+rather than falling back. A stylesheet full of them looks completely correct
+and has no effect, with no error anywhere. **Every colour in `userChrome.css`
+is a literal hex value for this reason.** Do not "tidy" them into variables.
+
+The way to tell the two failure modes apart is a deliberately hideous literal
+rule at the top of the file — `#TabsToolbar { background-color:#ff00ff
+!important }`. If that does not fire, the sheet is not being loaded; if it
+fires and your rules do not, the rules are wrong. Verify the restart was real
+first: closing the window can leave the process alive, so check `pgrep
+firefox` is empty.
+
+Two smaller ones: `@namespace url(...xul)` is optional and is best left out,
+since without it type selectors match in any namespace. And menus are already
+XUL here — `widget.gtk.native-context-menus` defaults to false — so grey menus
+are the `var()` bug, not GTK.
 
 ## System monitor widget
 
