@@ -20,7 +20,7 @@ export REPO_DIR
 # shellcheck source=lib/common.sh
 . "$REPO_DIR/lib/common.sh"
 
-MODULES=(packages bash vim konsole aurorae colors icons firefox widget)
+MODULES=(packages bash vim konsole aurorae colors icons firefox vscode widget)
 SELECTED=()
 
 usage() {
@@ -42,6 +42,8 @@ usage: install.sh [options]
                       Off by default: it repaints every icon on the desktop.
       --add-widget    also PLACE the system monitor widget on the desktop.
                       Off by default: it mutates the desktop containment.
+      --apply-vscode  also SELECT the Synthwave theme in vscode settings.json.
+                      Off by default: settings.json is yours, not ours.
   -l, --list          list modules and exit
   -h, --help          this
 
@@ -66,13 +68,14 @@ while [ $# -gt 0 ]; do
         --colors-global)    COLORS_GLOBAL=1 ;;
         --apply-icons)      ICONS_APPLY=1 ;;
         --add-widget)       WIDGET_ADD=1 ;;
+        --apply-vscode)     VSCODE_APPLY=1 ;;
         -l|--list)     printf '%s\n' "${MODULES[@]}"; exit 0 ;;
         -h|--help)     usage; exit 0 ;;
         *)             die "unknown option: $1 (try --help)" ;;
     esac
     shift
 done
-export DRY_RUN FORCE LINK_MODE NO_PACKAGES="${NO_PACKAGES:-0}" AURORAE_APPLY="${AURORAE_APPLY:-0}" COLORS_GLOBAL="${COLORS_GLOBAL:-0}" ICONS_APPLY="${ICONS_APPLY:-0}" WIDGET_ADD="${WIDGET_ADD:-0}"
+export DRY_RUN FORCE LINK_MODE NO_PACKAGES="${NO_PACKAGES:-0}" AURORAE_APPLY="${AURORAE_APPLY:-0}" COLORS_GLOBAL="${COLORS_GLOBAL:-0}" ICONS_APPLY="${ICONS_APPLY:-0}" WIDGET_ADD="${WIDGET_ADD:-0}" VSCODE_APPLY="${VSCODE_APPLY:-0}"
 
 # ---------- preflight ----------
 [ "$(id -u)" -eq 0 ] && die "run as your normal user, not root — this installs into \$HOME"
@@ -127,6 +130,7 @@ to see it:
   konsole  restart konsole; new windows use the Synthwave profile
   icons    restart plasmashell, or log out, to repaint the panel
   firefox  fully quit firefox and start it again
+  vscode   reload the window (Ctrl+Shift+P, Reload Window)
   widget   restart plasmashell; it does not reload QML on its own
 EOF
 fi

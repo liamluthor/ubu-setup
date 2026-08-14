@@ -32,6 +32,8 @@ Then `exec bash -l`, and restart Konsole.
 | `~/.local/share/icons/Synthwave/` | icon theme: terminal, dolphin, firefox, vscode | **copy** |
 | `~/.local/share/applications/firefox_firefox.desktop` | shadows the snap's entry to reach a themed icon | **copy** |
 | `~/.config/kdeglobals` | `Icons/Theme` — only with `--apply-icons` | keyed edit |
+| `~/.vscode/extensions/ubu-setup.synthwave-theme-1.0.0/` | VS Code colour theme | **copy** |
+| `~/.config/Code/User/settings.json` | `workbench.colorTheme` — only with `--apply-vscode` | keyed edit |
 | `<firefox profile>/chrome/userChrome.css` | synthwave browser chrome | **copy** |
 | `<firefox profile>/user.js` | the pref that makes Firefox read it | **copy** |
 | `~/.local/share/plasma/plasmoids/org.kde.synthwave.sysmon/` | desktop system-monitor widget | **copy** |
@@ -51,10 +53,11 @@ Then `exec bash -l`, and restart Konsole.
     --colors-global set the Plasma color scheme for EVERY Qt/KDE app
     --apply-icons   also SELECT the icon theme in kdeglobals
     --add-widget    also PLACE the system monitor widget on the desktop
+    --apply-vscode  also SELECT the Synthwave theme in vscode settings.json
 -l, --list          list modules
 ```
 
-Modules: `packages`, `bash`, `vim`, `konsole`, `aurorae`, `colors`, `icons`, `firefox`, `widget`.
+Modules: `packages`, `bash`, `vim`, `konsole`, `aurorae`, `colors`, `icons`, `firefox`, `vscode`, `widget`.
 
 ## Four layers, not one
 
@@ -247,6 +250,45 @@ Two smaller ones: `@namespace url(...xul)` is optional and is best left out,
 since without it type selectors match in any namespace. And menus are already
 XUL here — `widget.gtk.native-context-menus` defaults to false — so grey menus
 are the `var()` bug, not GTK.
+
+## VS Code
+
+The easiest of the four apps: VS Code loads unsigned extensions straight from
+a directory, so this is a real named theme in the picker rather than a hack.
+Regenerate it, never hand-edit `templates/vscode/`:
+
+```bash
+python3 tools/gen-vscode-theme.py
+```
+
+It invents no colours. All three inputs are already in the repo, and deriving
+from them is what makes the editor genuinely match rather than merely rhyme:
+
+| Input | Drives |
+|---|---|
+| `templates/color-schemes/Synthwave.colors` | workbench chrome — side bar, tabs, status bar; the same values every Qt app uses |
+| `templates/vim/colors/synthwave.vim` | syntax token colours, so a file in vim and the same file in VS Code highlight identically |
+| `templates/konsole/Synthwave.colorscheme` | the 16 ANSI slots, so the integrated terminal matches Konsole exactly |
+
+Vim groups map onto TextMate scopes by name (`Comment` → `comment`, `Function`
+→ `entity.name.function`, …). A group missing from the vim file is skipped
+rather than guessed at. Two need special handling: `Todo` and `Error` are the
+only groups vim renders as coloured *backgrounds*, and VS Code paints token
+colours as foreground — carrying `guifg` across would put black text on a
+black editor, so the highlight colour becomes the foreground instead.
+
+### settings.json is yours
+
+Selecting the theme is behind `--apply-vscode` because it writes to your
+`settings.json`. That file is **JSONC** — comments and trailing commas are
+legal in it — and rewriting one that has comments would silently strip them.
+So the module parses it as strict JSON and, if that fails, leaves the file
+untouched and prints the one line to add by hand. On a plain JSON file it
+merges the single key and preserves everything else.
+
+The check runs as two passes: the first only reports what would change, so the
+backup is taken *before* anything is written. Backing up afterwards would
+preserve the already-modified file and be worthless.
 
 ## System monitor widget
 

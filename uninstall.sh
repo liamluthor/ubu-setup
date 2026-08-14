@@ -107,6 +107,15 @@ for _root in "$HOME/snap/firefox/common/.mozilla/firefox" "$HOME/.mozilla/firefo
     done
 done
 
+# The vscode theme extension is a directory too.
+_vsc_dir="$HOME/.vscode/extensions/ubu-setup.synthwave-theme-1.0.0"
+if [ -d "$_vsc_dir" ]; then
+    while IFS= read -r _f; do
+        OWNED+=("$_vsc_dir/$_f")
+        OWNED_TPL["$_vsc_dir/$_f"]="$TEMPLATE_DIR/vscode/synthwave-theme/$_f"
+    done < <(cd "$_vsc_dir" && find . -type f -printf '%P\n')
+fi
+
 # The plasmoid is a KPackage directory, same shape as the icon theme.
 _widget_dir="${XDG_DATA_HOME:-$HOME/.local/share}/plasma/plasmoids/org.kde.synthwave.sysmon"
 if [ -d "$_widget_dir" ]; then
@@ -192,6 +201,23 @@ if [ "${_reverted:-0}" = 1 ]; then
     fi
 else
     skip "kwinrc does not use the Synthwave decoration"
+fi
+
+head1 "vscode theme"
+# Leaving settings.json naming a theme whose extension is gone makes vscode
+# complain on every launch, so put the stock dark theme back.
+_vsc_settings="$HOME/.config/Code/User/settings.json"
+if [ ! -f "$_vsc_settings" ]; then
+    skip "no vscode settings.json"
+elif [ "$DRY_RUN" = 1 ]; then
+    skip "would reset workbench.colorTheme if it names Synthwave"
+else
+    _vsc_out="$(python3 "$REPO_DIR/tools/vscode-unselect.py" "$_vsc_settings" 2>&1 || echo ERROR)"
+    case "$_vsc_out" in
+        RESET)   ok "settings.json colorTheme reset to Dark Modern" ;;
+        NOTOURS) skip "settings.json does not select Synthwave" ;;
+        *)       warn "left settings.json alone ($_vsc_out)" ;;
+    esac
 fi
 
 head1 "system monitor widget"
