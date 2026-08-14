@@ -269,6 +269,50 @@ ini_set() {
     ok "$rel [$group] $key=$value"
 }
 
+# ---------- desktop environment ----------
+# Half the modules here only mean anything under KDE Plasma: a KWin
+# decoration, a Plasma colour scheme, an icon theme selected through
+# kdeglobals, a plasmoid. On GNOME or a bare server every one of those would
+# write files that are never read — which looks like a successful install and
+# changes nothing.
+#
+# Two different questions, deliberately kept apart:
+#   is_plasma        — is the CURRENT SESSION Plasma? (can we apply anything?)
+#   plasma_installed — is Plasma on the box at all? (is installing worthwhile?)
+# Running over SSH from a TTY is the case that needs both: Plasma is installed,
+# the session is not Plasma, and the files are still worth writing.
+
+is_plasma() {
+    case "${XDG_CURRENT_DESKTOP:-}" in
+        *KDE*|*plasma*|*Plasma*) return 0 ;;
+    esac
+    [ -n "${KDE_FULL_SESSION:-}" ] && return 0
+    [ "${XDG_SESSION_DESKTOP:-}" = "KDE" ] && return 0
+    return 1
+}
+
+plasma_installed() {
+    command -v plasmashell >/dev/null 2>&1
+}
+
+# require_plasma DESCRIPTION — returns 1 when the module should skip entirely.
+require_plasma() {
+    local what="$1"
+
+    if is_plasma; then
+        return 0
+    fi
+
+    if plasma_installed; then
+        warn "not in a Plasma session (XDG_CURRENT_DESKTOP=${XDG_CURRENT_DESKTOP:-unset})"
+        warn "  installing $what anyway; log into Plasma for it to take effect"
+        return 0
+    fi
+
+    skip "$what needs KDE Plasma, which is not installed here"
+    return 1
+}
+
 # ---------- packages ----------
 # pkg_installed PKG — true when dpkg considers it fully installed.
 pkg_installed() {

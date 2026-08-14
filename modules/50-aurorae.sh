@@ -17,6 +17,8 @@ AURORAE_THEME_NAME="Synthwave"
 module_aurorae() {
     head1 "aurorae window decoration"
 
+    require_plasma "the window decoration" || return 0
+
     local src="$TEMPLATE_DIR/aurorae/$AURORAE_THEME_NAME"
     local dst="${XDG_DATA_HOME:-$HOME/.local/share}/aurorae/themes/$AURORAE_THEME_NAME"
 

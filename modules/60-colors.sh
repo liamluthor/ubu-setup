@@ -15,6 +15,8 @@ COLORS_SCHEME_NAME="Synthwave"
 module_colors() {
     head1 "plasma color scheme"
 
+    require_plasma "the Plasma colour scheme" || return 0
+
     local src="$TEMPLATE_DIR/color-schemes/$COLORS_SCHEME_NAME.colors"
     local dst="${XDG_DATA_HOME:-$HOME/.local/share}/color-schemes/$COLORS_SCHEME_NAME.colors"
 

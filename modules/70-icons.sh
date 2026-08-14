@@ -25,6 +25,8 @@ ICONS_THEME_NAME="Synthwave"
 module_icons() {
     head1 "icon theme"
 
+    require_plasma "the icon theme" || return 0
+
     local src="$TEMPLATE_DIR/icons/$ICONS_THEME_NAME"
     local dst="${XDG_DATA_HOME:-$HOME/.local/share}/icons/$ICONS_THEME_NAME"
 

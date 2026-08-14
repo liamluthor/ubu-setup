@@ -23,6 +23,8 @@ WIDGET_ID="org.kde.synthwave.sysmon"
 module_widget() {
     head1 "system monitor widget"
 
+    require_plasma "the system monitor widget" || return 0
+
     local src="$TEMPLATE_DIR/plasmoids/$WIDGET_ID"
     local dst="${XDG_DATA_HOME:-$HOME/.local/share}/plasma/plasmoids/$WIDGET_ID"
 

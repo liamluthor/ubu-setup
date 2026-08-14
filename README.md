@@ -73,6 +73,32 @@ window. Drag the monitor widget where you want it with Meta+D (Edit Mode).
 
 Modules: `packages`, `bash`, `vim`, `konsole`, `aurorae`, `colors`, `icons`, `firefox`, `vscode`, `widget`.
 
+## It checks for Plasma first
+
+Four modules only mean anything under KDE Plasma — the window decoration, the
+Plasma colour scheme, the icon theme selected through `kdeglobals`, and the
+plasmoid. On GNOME or a bare server every one of them would write files that
+are never read, which looks like a successful install and changes nothing.
+
+`require_plasma` in `lib/common.sh` gates them, and it keeps two questions
+apart on purpose:
+
+| | |
+|---|---|
+| `is_plasma` | is the **current session** Plasma? (`XDG_CURRENT_DESKTOP`, `KDE_FULL_SESSION`, `XDG_SESSION_DESKTOP`) |
+| `plasma_installed` | is Plasma **on the box** at all? (`plasmashell` on `PATH`) |
+
+Three outcomes:
+
+* **Plasma session** — everything runs as normal.
+* **Plasma installed, different session** (over SSH from a TTY, or a box with
+  both) — the files are still written, with a warning that they take effect
+  when you log into Plasma. Installing from a console is a legitimate thing to
+  want.
+* **No Plasma at all** — those four modules skip entirely and write nothing.
+  `bash`, `vim`, `konsole`, `firefox` and `vscode` still run, since none of
+  them care which desktop you are on.
+
 ## Four layers, not one
 
 Easy to conflate, since they all land in the same window:
