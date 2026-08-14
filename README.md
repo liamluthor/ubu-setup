@@ -32,7 +32,7 @@ Then `exec bash -l`, and restart Konsole.
 | `~/.local/share/icons/Synthwave/` | icon theme: terminal, dolphin, firefox, vscode | **copy** |
 | `~/.local/share/applications/firefox_firefox.desktop` | shadows the snap's entry to reach a themed icon | **copy** |
 | `~/.config/kdeglobals` | `Icons/Theme` — only with `--apply-icons` | keyed edit |
-| `~/.vscode/extensions/ubu-setup.synthwave-theme-1.0.0/` | VS Code colour theme | **copy** |
+| VS Code extension `ubu-setup.synthwave-theme` | colour theme | `code --install-extension` |
 | `~/.config/Code/User/settings.json` | `workbench.colorTheme` — only with `--apply-vscode` | keyed edit |
 | `<firefox profile>/chrome/userChrome.css` | synthwave browser chrome | **copy** |
 | `<firefox profile>/user.js` | the pref that makes Firefox read it | **copy** |
@@ -253,9 +253,9 @@ are the `var()` bug, not GTK.
 
 ## VS Code
 
-The easiest of the four apps: VS Code loads unsigned extensions straight from
-a directory, so this is a real named theme in the picker rather than a hack.
-Regenerate it, never hand-edit `templates/vscode/`:
+VS Code takes unsigned local extensions, so this is a real named theme in the
+picker rather than a stylesheet hack. Regenerate it, never hand-edit
+`templates/vscode/`:
 
 ```bash
 python3 tools/gen-vscode-theme.py
@@ -276,6 +276,27 @@ rather than guessed at. Two need special handling: `Todo` and `Error` are the
 only groups vim renders as coloured *backgrounds*, and VS Code paints token
 colours as foreground — carrying `guifg` across would put black text on a
 black editor, so the highlight colour becomes the foreground instead.
+
+### Copying the folder does not work
+
+The obvious install — drop the extension directory into
+`~/.vscode/extensions/` — **looks** like it works and does nothing. The folder
+is there with the right name, and modern VS Code ignores it: it loads only
+what is listed in that directory's own `extensions.json`, which it writes
+itself. `code --list-extensions` will not show it, the theme never reaches the
+picker, and nothing is logged. That is exactly how it failed on a fresh VM
+while appearing fine on the box it was built on.
+
+So the module packs a `.vsix` and runs `code --install-extension`. That needs
+no npm or vsce — a vsix is a zip with `[Content_Types].xml` and an
+`extension.vsixmanifest` beside the payload, which `tools/make-vsix.py` writes
+in about forty lines. The build is deterministic (fixed timestamps, sorted
+entries) so an unchanged theme produces an identical file.
+
+`code --list-extensions --show-versions` is the only honest check of whether
+it is installed; the directory existing proves nothing. Uninstall goes through
+`code --uninstall-extension` for the same reason — deleting the directory
+leaves it listed in `extensions.json` and VS Code complains on every launch.
 
 ### settings.json is yours
 

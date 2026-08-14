@@ -107,15 +107,6 @@ for _root in "$HOME/snap/firefox/common/.mozilla/firefox" "$HOME/.mozilla/firefo
     done
 done
 
-# The vscode theme extension is a directory too.
-_vsc_dir="$HOME/.vscode/extensions/ubu-setup.synthwave-theme-1.0.0"
-if [ -d "$_vsc_dir" ]; then
-    while IFS= read -r _f; do
-        OWNED+=("$_vsc_dir/$_f")
-        OWNED_TPL["$_vsc_dir/$_f"]="$TEMPLATE_DIR/vscode/synthwave-theme/$_f"
-    done < <(cd "$_vsc_dir" && find . -type f -printf '%P\n')
-fi
-
 # The plasmoid is a KPackage directory, same shape as the icon theme.
 _widget_dir="${XDG_DATA_HOME:-$HOME/.local/share}/plasma/plasmoids/org.kde.synthwave.sysmon"
 if [ -d "$_widget_dir" ]; then
@@ -204,6 +195,22 @@ else
 fi
 
 head1 "vscode theme"
+# The extension is installed through vscode's own CLI, so remove it the same
+# way. Deleting the directory by hand would leave it listed in vscode's
+# extensions.json and it would report a missing extension on every launch.
+if command -v code >/dev/null 2>&1 \
+   && code --list-extensions 2>/dev/null | grep -qx ubu-setup.synthwave-theme; then
+    if [ "$DRY_RUN" = 1 ]; then
+        skip "would code --uninstall-extension ubu-setup.synthwave-theme"
+    elif code --uninstall-extension ubu-setup.synthwave-theme >/dev/null 2>&1; then
+        ok "uninstalled ubu-setup.synthwave-theme"
+    else
+        warn "code --uninstall-extension failed; remove it from the Extensions view"
+    fi
+else
+    skip "synthwave theme extension not installed"
+fi
+
 # Leaving settings.json naming a theme whose extension is gone makes vscode
 # complain on every launch, so put the stock dark theme back.
 _vsc_settings="$HOME/.config/Code/User/settings.json"
