@@ -44,6 +44,9 @@ usage: install.sh [options]
                       Off by default: it mutates the desktop containment.
       --apply-vscode  also SELECT the Synthwave theme in vscode settings.json.
                       Off by default: settings.json is yours, not ours.
+      --apply-all     every --apply/--add flag above at once. This is the
+                      "give me the whole look" switch, and it repaints the
+                      desktop, so it stays opt-in rather than the default.
   -l, --list          list modules and exit
   -h, --help          this
 
@@ -69,6 +72,8 @@ while [ $# -gt 0 ]; do
         --apply-icons)      ICONS_APPLY=1 ;;
         --add-widget)       WIDGET_ADD=1 ;;
         --apply-vscode)     VSCODE_APPLY=1 ;;
+        --apply-all)        AURORAE_APPLY=1; COLORS_GLOBAL=1; ICONS_APPLY=1
+                            WIDGET_ADD=1;    VSCODE_APPLY=1 ;;
         -l|--list)     printf '%s\n' "${MODULES[@]}"; exit 0 ;;
         -h|--help)     usage; exit 0 ;;
         *)             die "unknown option: $1 (try --help)" ;;

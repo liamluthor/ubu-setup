@@ -1,17 +1,30 @@
 # ubu-setup
 
-Recreates the Synthwave color setup — Vim, Konsole, and Bash — on a fresh
-Ubuntu box. Idempotent: run it as often as you like, it only writes when
-something actually differs.
+Recreates the Synthwave look on a fresh Ubuntu/Plasma box: Bash, Vim, Konsole,
+the window decoration, the Plasma colour scheme, app icons, Firefox chrome, the
+VS Code theme, and a desktop system monitor. Idempotent — run it as often as
+you like, it only writes when something actually differs.
 
 ```bash
 git clone <this repo> ~/Repos/ubu-setup
 cd ~/Repos/ubu-setup
-./install.sh --dry-run     # see what it would do
-./install.sh               # do it
+./install.sh --dry-run       # see what it would do
+./install.sh --apply-all     # install everything and switch it all on
 ```
 
-Then `exec bash -l`, and restart Konsole.
+Plain `./install.sh` installs the files but does not *select* the desktop-wide
+pieces — decoration, colour scheme, icon theme, VS Code theme, widget. That is
+deliberate, since each one repaints something; `--apply-all` turns them all on.
+
+Afterwards:
+
+```
+exec bash -l                                  # prompt, LS_COLORS
+kquitapp6 plasmashell && kstart plasmashell   # icons and the widget
+```
+
+then restart Konsole, fully quit and restart Firefox, and reload the VS Code
+window. Drag the monitor widget where you want it with Meta+D (Edit Mode).
 
 ## What it installs
 
@@ -54,6 +67,7 @@ Then `exec bash -l`, and restart Konsole.
     --apply-icons   also SELECT the icon theme in kdeglobals
     --add-widget    also PLACE the system monitor widget on the desktop
     --apply-vscode  also SELECT the Synthwave theme in vscode settings.json
+    --apply-all     all of the above at once
 -l, --list          list modules
 ```
 
