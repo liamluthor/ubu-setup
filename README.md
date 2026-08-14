@@ -8,6 +8,7 @@ you like, it only writes when something actually differs.
 ```bash
 git clone <this repo> ~/Repos/ubu-setup
 cd ~/Repos/ubu-setup
+./bootstrap-plasma.sh        # only on a box without KDE yet — see below
 ./install.sh --dry-run       # see what it would do
 ./install.sh --apply-all     # install everything and switch it all on
 ```
@@ -25,6 +26,47 @@ kquitapp6 plasmashell && kstart plasmashell   # icons and the widget
 
 then restart Konsole, fully quit and restart Firefox, and reload the VS Code
 window. Drag the monitor widget where you want it with Meta+D (Edit Mode).
+
+## Starting from a stock Ubuntu
+
+`install.sh` themes Plasma; it does not install it. On a machine that has
+never had KDE, run this first:
+
+```bash
+./bootstrap-plasma.sh --dry-run   # print every command, change nothing
+./bootstrap-plasma.sh             # do it
+./bootstrap-plasma.sh --dm keep   # install Plasma, leave GDM as the login screen
+```
+
+It is deliberately a separate script. `install.sh` only ever writes inside
+`$HOME` and needs no privileges; this one installs packages and rewrites the
+display manager, which is root's business and a different kind of risk.
+
+It does three things: installs `kde-plasma-desktop` and the handful of extras
+this repo uses, optionally makes SDDM the display manager, and records Plasma
+as the login default for your user. Then log out, pick Plasma, and run
+`install.sh --apply-all`.
+
+Three details that are easy to get wrong:
+
+* **`kde-plasma-desktop`, not the alternatives.** `plasma-desktop` alone omits
+  pieces used here — `plasma-apply-colorscheme` lives in `plasma-workspace` —
+  and `kubuntu-desktop` drags in a full application suite nobody asked for.
+* **The Breeze icon package changes name between releases** —
+  `kf6-breeze-icon-theme` on current Ubuntu, `breeze-icon-theme` on older
+  ones. Every icon in this repo inherits from it, so the script probes for
+  whichever exists rather than hardcoding one and failing on the other.
+* **Recent Ubuntu ships Plasma Wayland-only.** There is no
+  `/usr/share/xsessions` at all, so the default session is recorded as
+  `Session=plasma` rather than `XSession=`. Writing the X key would name
+  something nothing can resolve. The script looks for the session file and
+  uses whichever key matches.
+
+Switching the display manager is the one step that can leave you staring at a
+black screen, so it prints the recovery line before doing it: from a TTY
+(Ctrl+Alt+F3), `sudo systemctl disable --now sddm && sudo systemctl enable
+--now gdm3`. `--dm keep` skips that step entirely — GDM can start a Plasma
+session perfectly well.
 
 ## What it installs
 

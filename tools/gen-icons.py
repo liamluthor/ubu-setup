@@ -22,8 +22,9 @@ Everything shares one luminance ramp, which is what makes the set look like a
 set: near-black tile, mark in the same cyan Synthwave.colorscheme uses for
 terminal body text (0,229,229).
 
-Needs breeze-icon-theme installed, plus python3-gi and librsvg's gdk-pixbuf
-loader (for measuring glyph bounding boxes by rendering).
+Needs the Breeze icon theme installed — the package is kf6-breeze-icon-theme
+on current Ubuntu, breeze-icon-theme on older releases — plus python3-gi and
+librsvg's gdk-pixbuf loader (for measuring glyph bounding boxes by rendering).
 """
 import os
 import re
@@ -166,8 +167,11 @@ def main():
 
     for p in (BREEZE, FIREFOX_SYMBOLIC, FILEMANAGER_SYMBOLIC):
         if not os.path.exists(p):
-            raise SystemExit(f'missing source: {p}\n'
-                             '(needs breeze-icon-theme, and firefox for its symbolic icon)')
+            raise SystemExit(
+                f'missing source: {p}\n'
+                '(needs the Breeze icon theme — kf6-breeze-icon-theme on current\n'
+                ' Ubuntu, breeze-icon-theme on older ones — and firefox for its\n'
+                ' symbolic icon)')
 
     # --- per-size terminal: breeze's own icon, recoloured ---
     for s in SIZES:
