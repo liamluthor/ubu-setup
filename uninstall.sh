@@ -59,6 +59,7 @@ declare -A OWNED_TPL=()
 
 OWNED=(
     "$HOME/synth.rc"
+    "$HOME/banner.sh"
     "$HOME/.vimrc"
     "$HOME/.vim/colors/synthwave.vim"
     "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/colors/synthwave.vim"

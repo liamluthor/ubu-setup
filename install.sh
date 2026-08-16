@@ -20,7 +20,7 @@ export REPO_DIR
 # shellcheck source=lib/common.sh
 . "$REPO_DIR/lib/common.sh"
 
-MODULES=(packages bash vim konsole aurorae colors icons firefox vscode widget)
+MODULES=(packages bash banner vim konsole aurorae colors icons firefox vscode widget)
 SELECTED=()
 
 usage() {
@@ -131,6 +131,7 @@ if [ "$DRY_RUN" != 1 ] && [ "$CHANGED" -gt 0 ]; then
 
 to see it:
   bash     exec bash -l          (or open a new terminal)
+  banner   exec bash -l          (needs >=76 columns; once per session)
   vim      vim anything.ts
   konsole  restart konsole; new windows use the Synthwave profile
   icons    restart plasmashell, or log out, to repaint the panel

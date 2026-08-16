@@ -73,7 +73,8 @@ session perfectly well.
 | Where | What | How |
 |---|---|---|
 | `~/synth.rc` | prompt, `LS_COLORS`, `GREP_COLORS`, man/less colors | symlink |
-| `~/.bashrc` | a marker-delimited block that sources `~/synth.rc` | in-place block |
+| `~/banner.sh` | the `DONT ASK // JUST HACK` login banner | symlink |
+| `~/.bashrc` | a marker-delimited block that sources `~/synth.rc` and `~/banner.sh` | in-place block |
 | `~/.vimrc` | truecolor + colorscheme + mouse/clipboard/paste handling | symlink |
 | `~/.vim/colors/synthwave.vim` | the Vim colorscheme | symlink |
 | `~/.config/nvim/colors/synthwave.vim` | same file, if `nvim` is installed | symlink |
@@ -178,6 +179,39 @@ So the global path shells out to `plasma-apply-colorscheme`, which merges the
 groups in and notifies running apps over D-Bus — most repaint without a
 restart. It needs a live Plasma session, so it is not usable from a chroot or a
 first-boot script.
+
+## Login banner
+
+`templates/bash/banner.sh` paints `DONT ASK` / `JUST HACK` over `HACK THE
+PLANET` at login, drawn from a 5x7 bitmap font held in an associative array —
+one string per glyph, rows joined by `:`, `1` for a lit pixel. Each of the seven
+pixel rows gets its own truecolor escape, which is where the pink-to-cyan
+gradient comes from. Only the eleven letters the two words need are defined.
+
+It is a normal module, so `--skip banner` leaves it out and `--only banner`
+installs just it.
+
+Three guards, each earning its place:
+
+- **Interactive shells only.** `scp` and `rsync` open a non-interactive shell
+  and read its stdout as protocol. Anything printed there corrupts the
+  transfer, and the failure looks like a network fault rather than a banner.
+- **Once per session**, via an exported `SYNTHWAVE_BANNER_SHOWN`. Otherwise
+  every nested `bash` repaints the whole thing.
+- **At least 76 columns.** The art is a fixed 73 wide; narrower and every row
+  soft-wraps into a smear, so it prints nothing instead.
+
+### Why the line that loads it lives in the bash module
+
+`ensure_block` owns exactly one marker-delimited block per file, keyed on
+`# >>> ubu-setup >>>`. A second module calling it on `~/.bashrc` would not
+append a second block — it would find the existing markers and rewrite that
+block, silently dropping whatever the first module put there. So the bash
+module emits both source lines, and the banner module only installs the file.
+
+The banner line is guarded on the file existing, which is what makes
+`--skip banner` safe: the line stays behind but evaluates to nothing, and
+installing the banner later needs no `~/.bashrc` change at all.
 
 ## Window decoration
 
@@ -455,7 +489,11 @@ settings dialog. Those are copied, so drift shows up as a pending change in
 `eval "$(dircolors -b)"` partway through, which sets `LS_COLORS`. `synth.rc`
 exports its own, so it has to load after. The block is appended at the end;
 `install.sh` also strips any hand-added bare `source ~/synth.rc` line so the
-file doesn't get sourced twice.
+file doesn't get sourced twice. The banner gets the same treatment — it started
+as a hand-added pair of lines pointing at whatever directory it was checked out
+in, and a leftover copy would source it twice, where the second run prints
+nothing because `SYNTHWAVE_BANNER_SHOWN` is already set. That reads as the new
+banner being broken, so the strip takes the comment above the line with it.
 
 **Guarded Vim options.** `clipmethod` (Vim ≥ 9.1.1443), `pastetoggle`
 (deprecated, gone in Neovim), `clipboard` (needs `+clipboard`) and
