@@ -42,16 +42,31 @@ export MANPAGER='less -R -M -i'
 # ----------------------------------------------------------
 # git branch, empty outside a repo
 # ----------------------------------------------------------
+# Emits literal \[ \] markers: _sw_prompt builds PS1 as a string, and bash
+# decodes those escapes when it renders the prompt. Without them readline
+# counts the color bytes as visible width and wraps the line ~55 columns early.
 _sw_git() {
-    local b
+    local b c
     b=$(git symbolic-ref --short HEAD 2>/dev/null) || \
     b=$(git rev-parse --short HEAD 2>/dev/null) || return
     if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
-        printf ' \001%s\002(\001%s\002%s\001%s\002*)' "$SW_DIM" "$SW_PINK_LO" "$b" "$SW_DIM"
+        c=$SW_PINK_LO
+        b="$b*"
     else
-        printf ' \001%s\002(\001%s\002%s\001%s\002)' "$SW_DIM" "$SW_CYAN" "$b" "$SW_DIM"
+        c=$SW_CYAN
     fi
+    printf '%s' " \\[${SW_DIM}\\](\\[${c}\\]${b}\\[${SW_DIM}\\])"
 }
+
+# ----------------------------------------------------------
+# window title: user@host: cwd
+# We rebuild PS1 from scratch each prompt, which drops the title escape the
+# stock ~/.bashrc prepends. Re-add it here, guarded on TERM the same way.
+# ----------------------------------------------------------
+case "$TERM" in
+    xterm*|rxvt*|screen*|tmux*) SW_TITLE='\[\e]0;\u@\h: \w\a\]' ;;
+    *)                         SW_TITLE='' ;;
+esac
 
 # ----------------------------------------------------------
 # prompt: single line
@@ -66,8 +81,8 @@ _sw_prompt() {
     local ident="$SW_PINK_HI"
     [ "$EUID" -eq 0 ] && ident="$SW_RED"
 
-    PS1="\[${ident}\]spatial\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h\[${SW_PURPLE}\]:\[${SW_CYAN_LO}\]\w"
-    PS1+="$(_sw_git | tr -d '\001\002')"
+    PS1="${SW_TITLE}\[${ident}\]spatial\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h\[${SW_PURPLE}\]:\[${SW_CYAN_LO}\]\w"
+    PS1+="$(_sw_git)"
     PS1+="\[${sig}\] \$\[${SW_OFF}\] "
 }
 PROMPT_COMMAND=_sw_prompt
