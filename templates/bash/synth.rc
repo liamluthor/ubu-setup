@@ -81,7 +81,7 @@ _sw_prompt() {
     local ident="$SW_PINK_HI"
     [ "$EUID" -eq 0 ] && ident="$SW_RED"
 
-    PS1="${SW_TITLE}\[${ident}\]spatial\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h\[${SW_PURPLE}\]:\[${SW_CYAN_LO}\]\w"
+    PS1="${SW_TITLE}\[${ident}\]\u\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h\[${SW_PURPLE}\]:\[${SW_CYAN_LO}\]\w"
     PS1+="$(_sw_git)"
     PS1+="\[${sig}\] \$\[${SW_OFF}\] "
 }
@@ -95,9 +95,9 @@ PROMPT_COMMAND=_sw_prompt
 #     local rc=$?
 #     local arrow="$SW_PINK_HI"
 #     [ $rc -ne 0 ] && arrow="$SW_RED"
-#     PS1="\[${SW_PURPLE}\]\n\[${SW_PINK}\]\u\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h"
+#     PS1="${SW_TITLE}\[${SW_PURPLE}\]\n\[${SW_PINK}\]\u\[${SW_PURPLE}\]@\[${SW_CYAN_HI}\]\h"
 #     PS1+="\[${SW_PURPLE}\] in \[${SW_CYAN_LO}\]\w"
-#     PS1+="$(_sw_git | tr -d '\001\002')"
+#     PS1+="$(_sw_git)"
 #     PS1+="\n\[${arrow}\]\$\[${SW_OFF}\] "
 # }
 # PROMPT_COMMAND=_sw_prompt2
