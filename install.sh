@@ -20,8 +20,16 @@ export REPO_DIR
 # shellcheck source=lib/common.sh
 . "$REPO_DIR/lib/common.sh"
 
-MODULES=(packages bash banner vim konsole aurorae colors icons firefox vscode widget)
+MODULES=(packages bash banner vim konsole macos aurorae colors icons firefox vscode widget)
 SELECTED=()
+
+# What a bare `./install.sh` runs on a Mac. Everything omitted is apt, dpkg,
+# KConfig or Plasma — none of which exist there — and the bash module and its
+# banner are superseded by the zsh ones the macos module installs.
+#
+# This only changes the DEFAULT. `--only konsole` on a Mac still runs konsole
+# and still fails honestly, rather than being silently filtered out.
+MACOS_MODULES=(macos vim)
 
 usage() {
     cat <<EOF
@@ -51,6 +59,7 @@ usage: install.sh [options]
   -h, --help          this
 
 modules: ${MODULES[*]}
+on macOS, a bare run does: ${MACOS_MODULES[*]}
 
 state:
   backups   ${BACKUP_ROOT/#$HOME/\~}/<timestamp>/
@@ -88,7 +97,11 @@ export DRY_RUN FORCE LINK_MODE NO_PACKAGES="${NO_PACKAGES:-0}" AURORAE_APPLY="${
 
 # ---------- resolve module list ----------
 if [ ${#SELECTED[@]} -eq 0 ]; then
-    SELECTED=("${MODULES[@]}")
+    if is_macos; then
+        SELECTED=("${MACOS_MODULES[@]}")
+    else
+        SELECTED=("${MODULES[@]}")
+    fi
 fi
 for want in "${SELECTED[@]}"; do
     printf '%s\n' "${MODULES[@]}" | grep -qx "$want" || die "no such module: $want (try --list)"
@@ -131,9 +144,10 @@ if [ "$DRY_RUN" != 1 ] && [ "$CHANGED" -gt 0 ]; then
 
 to see it:
   bash     exec bash -l          (or open a new terminal)
-  banner   exec bash -l          (needs >=76 columns; once per session)
+  banner   exec bash -l          (needs >=104 columns; once per session)
   vim      vim anything.ts
   konsole  restart konsole; new windows use the Synthwave profile
+  macos    exec zsh -l for the prompt; QUIT and reopen Terminal for the theme
   icons    restart plasmashell, or log out, to repaint the panel
   firefox  fully quit firefox and start it again
   vscode   reload the window (Ctrl+Shift+P, Reload Window)

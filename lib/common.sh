@@ -313,6 +313,74 @@ require_plasma() {
     return 1
 }
 
+# ---------- macOS ----------
+# The repo is Ubuntu-first and everything above assumes it: dpkg, apt-get,
+# fontconfig, KConfig, XDG paths. The macos module is the one exception, and it
+# needs the mirror image of require_plasma — a guard that makes it inert on
+# Linux, so a normal `./install.sh` on an Ubuntu box skips it rather than
+# writing a ~/.zshrc block and a Terminal.app profile nothing will ever read.
+
+is_macos() { [ "$(uname -s)" = "Darwin" ]; }
+
+# require_macos DESCRIPTION — returns 1 when the module should skip entirely.
+require_macos() {
+    local what="$1"
+    is_macos && return 0
+    skip "$what needs macOS; this is $(uname -s)"
+    return 1
+}
+
+# ---------- homebrew ----------
+# need_casks CASK... — `brew install --cask` only the ones that are missing.
+# The apt counterpart (need_pkgs) can fail hard when a package is absent,
+# because every Linux module depends on its packages. This one only ever warns:
+# the single cask involved is a font, and a missing font degrades the profile to
+# Menlo rather than breaking it. Refusing to install the theme over a font would
+# be the wrong trade.
+need_casks() {
+    local missing=() c
+    if ! command -v brew >/dev/null 2>&1; then
+        warn "homebrew not installed; cannot install: $*"
+        return 1
+    fi
+
+    for c in "$@"; do
+        brew list --cask "$c" >/dev/null 2>&1 || missing+=("$c")
+    done
+
+    if [ ${#missing[@]} -eq 0 ]; then
+        skip "casks present: $*"
+        return 0
+    fi
+
+    if [ "${NO_PACKAGES:-0}" = 1 ]; then
+        warn "missing casks not installed (--no-packages): ${missing[*]}"
+        return 1
+    fi
+
+    say "  installing: ${missing[*]}"
+    run brew install --cask "${missing[@]}" || { warn "brew install --cask ${missing[*]} failed"; return 1; }
+    ok "installed ${missing[*]}"
+}
+
+# font_installed FAMILY — true when a font file for FAMILY is in any of the
+# three places macOS looks. Deliberately a filename match rather than
+# system_profiler SPFontsDataType, which takes several seconds to enumerate
+# every font on the machine to answer one yes/no question.
+# Tested with a command substitution rather than `| grep -q .`: this file sets
+# `-o pipefail`, under which a grep that exits early can make the whole pipeline
+# report the upstream command's SIGPIPE death instead of grep's match.
+font_installed() {
+    local want="$1" d
+    for d in "$HOME/Library/Fonts" /Library/Fonts /System/Library/Fonts; do
+        [ -d "$d" ] || continue
+        if [ -n "$(find "$d" -maxdepth 1 -iname "*${want}*" -print -quit 2>/dev/null)" ]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
 # ---------- packages ----------
 # pkg_installed PKG — true when dpkg considers it fully installed.
 pkg_installed() {

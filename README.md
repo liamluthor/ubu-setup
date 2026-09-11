@@ -5,6 +5,9 @@ the window decoration, the Plasma colour scheme, app icons, Firefox chrome, the
 VS Code theme, and a desktop system monitor. Idempotent — run it as often as
 you like, it only writes when something actually differs.
 
+The terminal half also runs on macOS — zsh prompt, login banner, and a
+Terminal.app profile generated from the Konsole one. See [macOS](#macos).
+
 ```bash
 git clone <this repo> ~/Repos/ubu-setup
 cd ~/Repos/ubu-setup
@@ -93,6 +96,11 @@ session perfectly well.
 | `<firefox profile>/chrome/userChrome.css` | synthwave browser chrome | **copy** |
 | `<firefox profile>/user.js` | the pref that makes Firefox read it | **copy** |
 | `~/.local/share/plasma/plasmoids/org.kde.synthwave.sysmon/` | desktop system-monitor widget | **copy** |
+| `~/.synthwave-shell.zshrc` | macOS: the zsh prompt, palette, `LSCOLORS`, completion colors | symlink |
+| `~/.synthwave-banner.zsh` | macOS: the same login banner, rewritten for zsh / bash 3.2 | symlink |
+| `~/.zshrc` | macOS: a marker-delimited block sourcing both, appended after oh-my-zsh | in-place block |
+| `com.apple.Terminal` | macOS: the `Synthwave` Terminal.app profile, and the two default keys | `defaults` |
+| Homebrew cask | macOS: `font-hack` | only if missing |
 | apt | `vim less groff-base git fonts-hack konsole` | only if missing |
 
 ## Options
@@ -114,7 +122,9 @@ session perfectly well.
 -l, --list          list modules
 ```
 
-Modules: `packages`, `bash`, `vim`, `konsole`, `aurorae`, `colors`, `icons`, `firefox`, `vscode`, `widget`.
+Modules: `packages`, `bash`, `banner`, `vim`, `konsole`, `macos`, `aurorae`, `colors`, `icons`, `firefox`, `vscode`, `widget`.
+
+On macOS a bare `./install.sh` runs only `macos` and `vim` — see [macOS](#macos).
 
 ## It checks for Plasma first
 
@@ -141,6 +151,108 @@ Three outcomes:
 * **No Plasma at all** — those four modules skip entirely and write nothing.
   `bash`, `vim`, `konsole`, `firefox` and `vscode` still run, since none of
   them care which desktop you are on.
+
+## macOS
+
+The repo is Ubuntu-first, but the terminal look ports. One module covers it:
+
+```bash
+./install.sh --dry-run          # on a Mac this defaults to: macos vim
+./install.sh --only macos       # just the terminal, leave ~/.vimrc alone
+```
+
+It installs `~/.synthwave-shell.zshrc` and `~/.synthwave-banner.zsh`, appends a
+marker block to `~/.zshrc` that sources both, puts a `Synthwave` profile into
+Terminal.app, and pulls `font-hack` from Homebrew. `./uninstall.sh` reverses all
+of it, including removing the Terminal profile and putting Basic back.
+
+Nothing is shared with the Linux modules: `macos` is a no-op on Linux
+(`require_macos`, the mirror of `require_plasma`) and every Plasma/apt module is
+a no-op on a Mac.
+
+### Why the shell files are rewrites, not copies
+
+`synth.rc` is bash and macOS logs in with zsh, so `templates/zsh/synth.zshrc` is
+a port. The palette, `LS_COLORS` and `GREP_COLORS` strings are deliberately
+**byte-identical** to the bash version — a Mac and an Ubuntu box colour the same
+`ls` output the same way. Only the shell-specific parts differ: `vcs_info`
+instead of shelling out to `git` twice per prompt, `%{ %}` instead of `\[ \]`,
+`LSCOLORS` added for BSD `ls` (a completely different format from `LS_COLORS`),
+and a 256-colour fallback for terminals that set no `COLORTERM`.
+
+The banner is a port for a blunter reason: it holds its 5x7 font in a bash 4
+associative array, and macOS ships bash 3.2 — bash 4 went GPLv3 and Apple never
+shipped it. `banner.zsh` rebuilds the font and the gradient as `case` statements
+and walks the glyph rows with `${spec#*:}`, so it runs under both shells. Two
+traps it encodes:
+
+* Substring offsets must be written `${text:$pos:1}`, with the `$`. Bash accepts
+  a bare name; zsh parses the `:p` of `${text:pos:1}` as a history modifier and
+  dies with ``unrecognized modifier `p'``.
+* The helpers assign to a variable instead of printing a value for `$(...)` to
+  capture. Command substitution forks, and the render loop goes 7 rows x 9
+  glyphs deep — ~130 forks to paint two words, on every login.
+
+### The Terminal.app profile is generated
+
+Terminal.app has no Konsole-style config file. Profiles live in its preferences
+domain with every colour as an `NSKeyedArchiver`-serialised `NSColor` in an
+opaque `<data>` blob, so `tools/gen-terminal-profile.py` derives one from the
+Konsole colorscheme and profile:
+
+```bash
+python3 tools/gen-terminal-profile.py      # after editing the konsole templates
+```
+
+The output **is** checked in, so installing needs no python. The obvious way to
+write those blobs is pyobjc, which is not in the stock macOS python3 and does not
+exist on the Ubuntu boxes, so the archive is built by hand — a format read back
+out of Terminal's own built-in profiles rather than guessed. Three quirks it has
+to match:
+
+* `NSColorSpace 2` is device RGB and its components live under `NSRGB` as a
+  space-separated ASCII string with a **trailing NUL**. A C string, not floats
+  and not an array. Alpha is an optional fourth component, present only when the
+  colour is actually translucent.
+* Those components are **float32**. Apple's encoder rounds through a single and
+  prints 8 significant digits, so 19/255 is `0.074509807`. Emit full double
+  precision and every colour differs from what Terminal writes back the moment
+  you open its settings dialog, which makes `--dry-run` report permanent drift.
+* `NSFont` wants the **PostScript** name (`Hack-Regular`), not the family name
+  Konsole stores (`Hack`). Give it the family and Terminal falls back to Menlo
+  silently, which looks like the profile never applied.
+
+Konsole's `Opacity=0.8` has no separate knob in Terminal.app; it becomes the
+alpha on `BackgroundColor`. Cursor and selection are taken from palette slots the
+scheme already defines (bold foreground, faint magenta) because Konsole leaves
+both to the widget theme.
+
+### Quit Terminal, do not just open a tab
+
+This is the one that looks like a failed install. The shell rc is read per
+shell, so a **new tab shows the new prompt immediately** — but the window's
+colours and opacity come from Terminal itself, which cached `Window Settings` at
+launch and cannot see a profile `defaults` added behind its back. Quit it
+completely (cmd-Q) and reopen. Both default keys are set, and setting only one is
+the usual mistake: `Default Window Settings` governs cmd-N, `Startup Window
+Settings` governs the window Terminal opens at launch — miss the second and every
+fresh launch comes up Basic.
+
+### bash 3.2 notes
+
+`uninstall.sh` used to open with `declare -A`, which simply fails on bash 3.2,
+after which `${OWNED_TPL[$f]}` evaluates a path as *arithmetic* and dies with
+"operand expected" once per file. It now keeps that map as `dest<TAB>template`
+strings in a plain indexed array.
+
+Two portability rules this module follows, both learned the hard way:
+
+* Never test a process with ``ps ... | grep -q``. `common.sh` sets `-o pipefail`,
+  and `grep -q` exits on its first match, so `ps` dies of SIGPIPE and pipefail
+  reports the pipeline as **failed on the strength of ps's status** even though
+  grep matched. Use `grep -c` and compare the count; it reads to EOF.
+* `pgrep` is not a substitute: it finds nothing in a restricted or sandboxed
+  context and fails silently, which is worse than failing loudly.
 
 ## Four layers, not one
 
@@ -198,8 +310,16 @@ Three guards, each earning its place:
   transfer, and the failure looks like a network fault rather than a banner.
 - **Once per session**, via an exported `SYNTHWAVE_BANNER_SHOWN`. Otherwise
   every nested `bash` repaints the whole thing.
-- **At least 76 columns.** The art is a fixed 73 wide; narrower and every row
-  soft-wraps into a smear, so it prints nothing instead.
+- **At least 76 columns**, per `banner.sh` — but that number is wrong, and the
+  art needs **104**. 73 is the width of the `━` rule, which is the narrowest
+  thing in the banner, not the widest; the widest is the `JUST HACK` glyph rows
+  at 104 columns (9 glyphs: eight 5 pixels wide at 2 columns per pixel plus a
+  2-column gap, one space glyph at 3). So between 76 and 103 columns the guard
+  passes and the art soft-wraps into exactly the smear it exists to prevent.
+  Nobody noticed because `Synthwave.profile` asks for 120 columns.
+  `templates/zsh/banner.zsh` checks 104; `banner.sh` has not been changed, since
+  tightening it stops the banner from drawing on 80-column Ubuntu boxes where it
+  currently draws badly — a judgement call, not an oversight.
 
 ### Why the line that loads it lives in the bash module
 

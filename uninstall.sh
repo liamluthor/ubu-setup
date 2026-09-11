@@ -55,11 +55,35 @@ fi
 # is ambiguous, which a directory theme makes it: six files are all called
 # utilities-terminal.svg, and matching by name would compare every size
 # against whichever one find(1) hit first.
-declare -A OWNED_TPL=()
+#
+# Held as "dest<TAB>template" strings in a plain indexed array rather than the
+# associative array this obviously wants. macOS ships bash 3.2 — bash 4 went
+# GPLv3 and Apple never shipped it — and `declare -A` there fails outright,
+# after which ${OWNED_TPL[$f]} evaluates the path as ARITHMETIC and dies with
+# "operand expected" once per file. A tab is safe as the separator because
+# every key is an absolute path.
+OWNED_TPL=()
+
+_owned_tpl_set() { OWNED_TPL+=("$1	$2"); }
+
+# Prints the template for $1, or nothing. The ${arr[@]+...} guard is for the
+# empty case: under `set -u`, bash 3.2 treats "${arr[@]}" on an empty array as
+# an unbound variable and aborts.
+_owned_tpl_get() {
+    local want="$1" e
+    for e in ${OWNED_TPL[@]+"${OWNED_TPL[@]}"}; do
+        case "$e" in
+            "$want	"*) printf '%s' "${e#*	}"; return 0 ;;
+        esac
+    done
+    return 1
+}
 
 OWNED=(
     "$HOME/synth.rc"
     "$HOME/banner.sh"
+    "$HOME/.synthwave-shell.zshrc"
+    "$HOME/.synthwave-banner.zsh"
     "$HOME/.vimrc"
     "$HOME/.vim/colors/synthwave.vim"
     "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/colors/synthwave.vim"
@@ -74,7 +98,7 @@ _icons_dir="${XDG_DATA_HOME:-$HOME/.local/share}/icons/Synthwave"
 if [ -d "$_icons_dir" ]; then
     while IFS= read -r _f; do
         OWNED+=("$_icons_dir/$_f")
-        OWNED_TPL["$_icons_dir/$_f"]="$TEMPLATE_DIR/icons/Synthwave/$_f"
+        _owned_tpl_set "$_icons_dir/$_f" "$TEMPLATE_DIR/icons/Synthwave/$_f"
     done < <(cd "$_icons_dir" && find . -type f -printf '%P\n')
 fi
 
@@ -85,7 +109,7 @@ _ff_dst="${XDG_DATA_HOME:-$HOME/.local/share}/applications/firefox_firefox.deskt
 _ff_src="$REPO_DIR/templates/applications/firefox_firefox.desktop"
 if [ -f "$_ff_dst" ] && [ -f "$_ff_src" ] && cmp -s "$_ff_dst" "$_ff_src"; then
     OWNED+=("$_ff_dst")
-    OWNED_TPL["$_ff_dst"]="$_ff_src"
+    _owned_tpl_set "$_ff_dst" "$_ff_src"
 fi
 
 # Firefox's two files live in a profile whose directory name is random, so it
@@ -103,7 +127,7 @@ for _root in "$HOME/snap/firefox/common/.mozilla/firefox" "$HOME/.mozilla/firefo
     for _f in chrome/userChrome.css user.js; do
         if [ -f "$_pd/$_f" ]; then
             OWNED+=("$_pd/$_f")
-            OWNED_TPL["$_pd/$_f"]="$TEMPLATE_DIR/firefox/$(basename "$_f")"
+            _owned_tpl_set "$_pd/$_f" "$TEMPLATE_DIR/firefox/$(basename "$_f")"
         fi
     done
 done
@@ -113,7 +137,7 @@ _widget_dir="${XDG_DATA_HOME:-$HOME/.local/share}/plasma/plasmoids/org.kde.synth
 if [ -d "$_widget_dir" ]; then
     while IFS= read -r _f; do
         OWNED+=("$_widget_dir/$_f")
-        OWNED_TPL["$_widget_dir/$_f"]="$TEMPLATE_DIR/plasmoids/org.kde.synthwave.sysmon/$_f"
+        _owned_tpl_set "$_widget_dir/$_f" "$TEMPLATE_DIR/plasmoids/org.kde.synthwave.sysmon/$_f"
     done < <(cd "$_widget_dir" && find . -type f -printf '%P\n')
 fi
 
@@ -122,7 +146,7 @@ _aurorae_dir="${XDG_DATA_HOME:-$HOME/.local/share}/aurorae/themes/Synthwave"
 if [ -d "$_aurorae_dir" ]; then
     while IFS= read -r _f; do
         OWNED+=("$_aurorae_dir/$_f")
-        OWNED_TPL["$_aurorae_dir/$_f"]="$TEMPLATE_DIR/aurorae/Synthwave/$_f"
+        _owned_tpl_set "$_aurorae_dir/$_f" "$TEMPLATE_DIR/aurorae/Synthwave/$_f"
     done < <(cd "$_aurorae_dir" && find . -maxdepth 1 -type f -printf '%P\n')
 fi
 
@@ -138,7 +162,7 @@ for f in "${OWNED[@]}"; do
     elif [ -f "$f" ]; then
         # copy-mode install, or Konsole rewrote it. Remove only if it still
         # matches a template byte for byte.
-        tpl="${OWNED_TPL[$f]:-}"
+        tpl="$(_owned_tpl_get "$f" || true)"
         if [ -z "$tpl" ]; then
             # Unambiguous single files still resolve by name.
             name="$(basename "$f")"
@@ -155,7 +179,7 @@ for f in "${OWNED[@]}"; do
 done
 
 head1 "removing managed blocks"
-for f in "$HOME/.bashrc"; do
+for f in "$HOME/.bashrc" "$HOME/.zshrc"; do
     rel="${f/#$HOME/\~}"
     if [ -f "$f" ] && grep -qF "$BLOCK_BEGIN" "$f"; then
         backup "$f"
@@ -174,6 +198,53 @@ for f in "$HOME/.bashrc"; do
         skip "$rel has no ubu-setup block"
     fi
 done
+
+head1 "terminal.app profile"
+# The two default keys are reset BEFORE the profile is deleted, not after.
+# Terminal does fall back to Basic for a name it cannot resolve, but it also
+# writes that unresolvable name straight back into its prefs when it quits, so
+# deleting a profile that is still named as the default leaves a ghost entry in
+# the settings list that cannot be selected or removed from the UI.
+if ! is_macos; then
+    skip "Terminal.app profile is macOS-only"
+else
+    _tdom="com.apple.Terminal"
+    _tprof="Synthwave"
+    _tprefs="$HOME/Library/Preferences/com.apple.Terminal.plist"
+
+    for _k in "Default Window Settings" "Startup Window Settings"; do
+        if [ "$(defaults read "$_tdom" "$_k" 2>/dev/null || true)" = "$_tprof" ]; then
+            backup "$_tprefs"
+            run defaults write "$_tdom" "$_k" -string Basic && ok "$_k reset to Basic"
+        else
+            skip "$_k does not use $_tprof"
+        fi
+    done
+
+    # `defaults` has no way to remove one key from a dict value, so the domain
+    # is exported, edited with PlistBuddy, and imported whole. Going through
+    # defaults rather than writing the plist directly keeps cfprefsd — which
+    # owns and caches that file — in the loop.
+    _tdump="$(mktemp)"
+    if defaults export "$_tdom" "$_tdump" 2>/dev/null \
+        && /usr/libexec/PlistBuddy -c "Print :'Window Settings':$_tprof:name" "$_tdump" >/dev/null 2>&1; then
+        backup "$_tprefs"
+        if /usr/libexec/PlistBuddy -c "Delete :'Window Settings':$_tprof" "$_tdump" >/dev/null 2>&1; then
+            run defaults import "$_tdom" "$_tdump" && ok "removed Terminal profile '$_tprof'"
+        else
+            fail "could not delete '$_tprof' from the exported prefs"
+        fi
+    else
+        skip "Terminal has no '$_tprof' profile"
+    fi
+    rm -f "$_tdump"
+
+    # Counted, not `pgrep`/`grep -q` — see the note on _terminal_running in
+    # modules/45-macos.sh for why both of those report false here.
+    if [ "$(ps -Awwo comm= 2>/dev/null | grep -c '/Terminal\.app/Contents/MacOS/Terminal$')" -gt 0 ]; then
+        warn "Terminal is running — quit it completely (cmd-Q) for this to stick"
+    fi
+fi
 
 head1 "window decoration"
 # Leaving kwinrc pointing at a theme whose files are gone gives you an
