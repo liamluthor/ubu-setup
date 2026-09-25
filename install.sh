@@ -20,7 +20,7 @@ export REPO_DIR
 # shellcheck source=lib/common.sh
 . "$REPO_DIR/lib/common.sh"
 
-MODULES=(packages bash banner vim konsole macos aurorae colors icons firefox vscode widget)
+MODULES=(packages bash banner vim konsole macos aurorae colors icons firefox vscode ghidra widget)
 SELECTED=()
 
 # What a bare `./install.sh` runs on a Mac. Everything omitted is apt, dpkg,
@@ -52,6 +52,8 @@ usage: install.sh [options]
                       Off by default: it mutates the desktop containment.
       --apply-vscode  also SELECT the Synthwave theme in vscode settings.json.
                       Off by default: settings.json is yours, not ours.
+      --apply-ghidra  also SELECT the Synthwave theme in Ghidra's preferences.
+                      Off by default: those preferences are Ghidra's.
       --apply-all     every --apply/--add flag above at once. This is the
                       "give me the whole look" switch, and it repaints the
                       desktop, so it stays opt-in rather than the default.
@@ -81,15 +83,16 @@ while [ $# -gt 0 ]; do
         --apply-icons)      ICONS_APPLY=1 ;;
         --add-widget)       WIDGET_ADD=1 ;;
         --apply-vscode)     VSCODE_APPLY=1 ;;
+        --apply-ghidra)     GHIDRA_APPLY=1 ;;
         --apply-all)        AURORAE_APPLY=1; COLORS_GLOBAL=1; ICONS_APPLY=1
-                            WIDGET_ADD=1;    VSCODE_APPLY=1 ;;
+                            WIDGET_ADD=1;    VSCODE_APPLY=1; GHIDRA_APPLY=1 ;;
         -l|--list)     printf '%s\n' "${MODULES[@]}"; exit 0 ;;
         -h|--help)     usage; exit 0 ;;
         *)             die "unknown option: $1 (try --help)" ;;
     esac
     shift
 done
-export DRY_RUN FORCE LINK_MODE NO_PACKAGES="${NO_PACKAGES:-0}" AURORAE_APPLY="${AURORAE_APPLY:-0}" COLORS_GLOBAL="${COLORS_GLOBAL:-0}" ICONS_APPLY="${ICONS_APPLY:-0}" WIDGET_ADD="${WIDGET_ADD:-0}" VSCODE_APPLY="${VSCODE_APPLY:-0}"
+export DRY_RUN FORCE LINK_MODE NO_PACKAGES="${NO_PACKAGES:-0}" AURORAE_APPLY="${AURORAE_APPLY:-0}" COLORS_GLOBAL="${COLORS_GLOBAL:-0}" ICONS_APPLY="${ICONS_APPLY:-0}" WIDGET_ADD="${WIDGET_ADD:-0}" VSCODE_APPLY="${VSCODE_APPLY:-0}" GHIDRA_APPLY="${GHIDRA_APPLY:-0}"
 
 # ---------- preflight ----------
 [ "$(id -u)" -eq 0 ] && die "run as your normal user, not root — this installs into \$HOME"
@@ -151,6 +154,7 @@ to see it:
   icons    restart plasmashell, or log out, to repaint the panel
   firefox  fully quit firefox and start it again
   vscode   reload the window (Ctrl+Shift+P, Reload Window)
+  ghidra   restart ghidra, or Edit > Theme > Switch... > synthwave
   widget   restart plasmashell; it does not reload QML on its own
 EOF
 fi

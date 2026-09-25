@@ -1,0 +1,168 @@
+name = synthwave
+lookAndFeel = Flat Dark
+useDarkDefaults = true
+
+// Palette taken from the desktop Synthwave set: Konsole Synthwave.colorscheme,
+// KDE Synthwave.colors, Firefox userChrome.css, vim synthwave.vim and the VS Code
+// synthwave theme. Token roles follow the vim/VS Code syntax mapping so code
+// reads the same in Ghidra as in the editor.
+color.custom.black = #000000       // view background (Konsole, vim, VS Code)
+color.custom.window = #0c0c10      // window / chrome background (KDE, Firefox)
+color.custom.panel = #14141a       // alternate background, toolbar
+color.custom.border = #2a1f3d      // borders, separators
+color.custom.hover = #1d1526       // hover
+color.custom.line = #0c0c1a        // current line (VS Code lineHighlight)
+color.custom.visual = #3d1060      // text selection (vim Visual)
+color.custom.select = #8a3ac0      // list/table selection (KDE Selection alt)
+
+color.custom.cyan = #00e5e5        // foreground
+color.custom.cyan.link = #00d9d9   // links, references
+color.custom.cyan.hi = #6bffff     // parameters
+color.custom.cyan.faint = #0fa8b0  // punctuation, addresses
+color.custom.pink = #ff3bff        // keywords, mnemonics, accent
+color.custom.pink.lo = #ff7bff     // numbers, operators
+color.custom.purple = #b84dff      // strings, constants
+color.custom.purple.hi = #d07bff   // types, identifiers, registers
+color.custom.green = #3bff9e       // functions
+color.custom.green.hi = #7bffc4    // external functions
+color.custom.yellow = #ffd866      // preprocessor, specials, labels, globals
+color.custom.yellow.hi = #ffe699   // local labels
+color.custom.red = #ff3b3b         // errors, writes
+color.custom.dim = #7e63a8         // comments, inactive
+color.custom.gray = #4a4a4a        // line numbers, low-value bytes
+color.custom.white = #ffffff
+
+color.custom.hl.cyan = #0f3d3d     // highlight backgrounds, kept dark so text stays readable
+color.custom.hl.pink = #4a1a4a
+color.custom.hl.yellow = #4a3d10
+color.custom.hl.green = #0f4028
+color.custom.hl.red = #4a1414
+
+// ---- Swing / Flat Dark base ----
+[color]system.color.bg.view = color.custom.black
+[color]system.color.fg.view = color.custom.cyan
+[color]system.color.bg.control = color.custom.window
+[color]system.color.fg.control = color.custom.cyan
+[color]system.color.bg.selected.view = color.custom.select
+[color]system.color.fg.selected.view = color.custom.white
+[color]system.color.bg.tooltip = #101016
+[color]system.color.fg.tooltip = color.custom.cyan
+[color]system.color.bg.border = color.custom.border
+[color]system.color.fg.disabled = color.custom.dim
+
+// ---- cursor, selection, highlights ----
+color.cursor.focused = color.custom.pink
+color.cursor.unfocused = color.custom.dim
+color.bg.currentline = color.custom.line
+color.bg.selection = color.custom.visual
+color.bg.highlight = color.custom.hl.cyan
+color.bg.header.active = color.custom.border
+color.bg.header.inactive = color.custom.panel
+
+color.bg.listing.highlighter.middle.mouse = color.custom.hl.pink
+color.bg.listing.highlighter.scoped.read = color.custom.hl.green
+color.bg.listing.highlighter.scoped.write = color.custom.hl.red
+
+color.bg.decompiler.current.variable = color.custom.hl.yellow
+color.bg.decompiler.highlights.default = color.custom.hl.yellow
+color.bg.decompiler.highlights.middle.mouse = color.custom.hl.pink
+color.bg.decompiler.highlights.find = color.custom.hl.cyan
+color.bg.decompiler.highlights.find.active = #0f6b6b
+
+// ---- decompiler ----
+color.fg.decompiler.keyword = color.custom.pink
+color.fg.decompiler.type = color.custom.purple.hi
+color.fg.decompiler.variable = color.custom.cyan
+color.fg.decompiler.parameter = color.custom.cyan.hi
+color.fg.decompiler.global = color.custom.yellow
+color.fg.decompiler.constant = color.custom.pink.lo
+color.fg.decompiler.comment = color.custom.dim
+color.fg.decompiler.external.function = color.custom.green.hi
+color.fg.decompiler.special = color.custom.yellow
+color.fg.decompiler.error = color.custom.red
+color.fg.listing.function.name = color.custom.green    // also colors function names in the decompiler
+
+// ---- listing ----
+color.fg.listing.address = color.custom.cyan.faint
+color.fg.listing.bytes = color.custom.dim
+color.fg.listing.bytes.alignment = color.custom.gray
+color.fg.listing.mnemonic = color.custom.pink
+color.fg.listing.mnemonic.override = color.custom.yellow
+color.fg.listing.mnemonic.unimplemented = color.custom.red
+color.fg.listing.register = color.custom.purple.hi
+color.fg.listing.constant = color.custom.pink.lo
+color.fg.listing.array.values = color.custom.pink.lo
+color.fg.listing.fieldname = color.custom.purple.hi
+color.fg.listing.field.offset = color.custom.cyan.faint
+color.fg.listing.separator = color.custom.border
+color.fg.listing.underline = color.custom.pink
+color.fg.listing.block.start = color.custom.purple
+color.fg.listing.stack.depth = color.custom.dim
+color.fg.listing.ref.bad = color.custom.red
+
+color.fg.listing.function.name.thunk = color.custom.green.hi
+color.fg.listing.function.return.type = color.custom.purple.hi
+color.fg.listing.function.param = color.custom.cyan.hi
+color.fg.listing.function.param.auto = color.custom.cyan.hi
+color.fg.listing.function.param.custom = color.custom.cyan.hi
+color.fg.listing.function.param.dynamic = color.custom.cyan.hi
+color.fg.listing.function.variable = color.custom.cyan
+color.fg.listing.function.variable.assigned = color.custom.cyan.hi
+color.fg.listing.function.tag = color.custom.yellow
+
+color.fg.listing.label.primary = color.custom.yellow
+color.fg.listing.label.local = color.custom.yellow.hi
+color.fg.listing.label.non.primary = color.custom.cyan
+color.fg.listing.label.unreferenced = color.custom.dim
+
+color.fg.listing.comment.auto = color.custom.dim
+color.fg.listing.comment.eol = color.custom.dim
+color.fg.listing.comment.pre = color.custom.dim
+color.fg.listing.comment.post = color.custom.dim
+color.fg.listing.comment.plate = color.custom.purple
+color.fg.listing.comment.repeatable = color.custom.dim
+color.fg.listing.comment.ref.repeatable = color.custom.dim
+color.fg.listing.comment.offcut = color.custom.red
+
+color.fg.listing.xref = color.custom.cyan.faint
+color.fg.listing.xref.read = color.custom.green
+color.fg.listing.xref.write = color.custom.red
+color.fg.listing.xref.other = color.custom.dim
+color.fg.listing.xref.offcut = color.custom.yellow
+color.fg.listing.ext.entrypoint = color.custom.green
+color.fg.listing.ext.ref.resolved = color.custom.cyan.link
+color.fg.listing.ext.ref.unresolved = color.custom.red
+
+color.fg.listing.flow.arrow.selected = color.custom.pink
+color.fg.listing.flow.arrow.active = color.custom.cyan
+color.fg.listing.flow.arrow.inactive = color.custom.dim
+
+// ---- tabs, filters, console ----
+color.bg.widget.tabs.selected.active = color.custom.border
+color.fg.widget.tabs.selected.active = color.custom.pink
+color.bg.widget.tabs.selected.inactive = color.custom.panel
+color.bg.widget.tabs.unselected = color.custom.window
+color.bg.widget.tabs.highlighted = color.custom.hover
+
+color.bg.filterfield = color.custom.panel
+color.fg.filterfield = color.custom.cyan
+color.fg.consoletextpane = color.custom.cyan
+color.fg.interpreterconsole.error = color.custom.red
+
+// ---- overview bar and bookmarks ----
+color.bg.plugin.overview.address.function = color.custom.green
+color.bg.plugin.overview.address.instruction = color.custom.pink
+color.bg.plugin.overview.address.data = color.custom.purple
+color.bg.plugin.overview.address.undefined = color.custom.border
+color.bg.plugin.overview.address.uninitialized = color.custom.gray
+color.bg.plugin.overview.address.external.ref = color.custom.yellow
+
+color.bg.plugin.bookmark.note = color.custom.cyan
+color.bg.plugin.bookmark.default = color.custom.purple
+color.bg.plugin.bookmark.info = color.custom.green
+color.bg.plugin.bookmark.warning = color.custom.yellow
+color.bg.plugin.bookmark.analysis = color.custom.purple.hi
+color.bg.plugin.bookmark.error = color.custom.red
+
+// Hack is the Konsole Synthwave profile font.
+font.monospaced = Hack-PLAIN-12

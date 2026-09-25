@@ -93,6 +93,8 @@ session perfectly well.
 | `~/.config/kdeglobals` | `Icons/Theme` — only with `--apply-icons` | keyed edit |
 | VS Code extension `ubu-setup.synthwave-theme` | colour theme | `code --install-extension` |
 | `~/.config/Code/User/settings.json` | `workbench.colorTheme` — only with `--apply-vscode` | keyed edit |
+| `~/.config/ghidra/ghidra_*/themes/synthwave.theme` | Ghidra theme, into every Ghidra version that has been run | **copy** |
+| `~/.config/ghidra/ghidra_*/preferences` | `Theme` — only with `--apply-ghidra` | keyed edit |
 | `<firefox profile>/chrome/userChrome.css` | synthwave browser chrome | **copy** |
 | `<firefox profile>/user.js` | the pref that makes Firefox read it | **copy** |
 | `~/.local/share/plasma/plasmoids/org.kde.synthwave.sysmon/` | desktop system-monitor widget | **copy** |
@@ -118,11 +120,12 @@ session perfectly well.
     --apply-icons   also SELECT the icon theme in kdeglobals
     --add-widget    also PLACE the system monitor widget on the desktop
     --apply-vscode  also SELECT the Synthwave theme in vscode settings.json
+    --apply-ghidra  also SELECT the Synthwave theme in Ghidra's preferences
     --apply-all     all of the above at once
 -l, --list          list modules
 ```
 
-Modules: `packages`, `bash`, `banner`, `vim`, `konsole`, `macos`, `aurorae`, `colors`, `icons`, `firefox`, `vscode`, `widget`.
+Modules: `packages`, `bash`, `banner`, `vim`, `konsole`, `macos`, `aurorae`, `colors`, `icons`, `firefox`, `vscode`, `ghidra`, `widget`.
 
 On macOS a bare `./install.sh` runs only `macos` and `vim` — see [macOS](#macos).
 
@@ -546,6 +549,41 @@ merges the single key and preserves everything else.
 The check runs as two passes: the first only reports what would change, so the
 backup is taken *before* anything is written. Backing up afterwards would
 preserve the already-modified file and be worthless.
+
+## Ghidra
+
+`templates/ghidra/synthwave.theme` is a Ghidra theme built on the same
+palette, with code coloured the way vim colours it: keywords and mnemonics
+pink, types and registers purple, functions green, numbers soft pink, globals
+and labels yellow, comments dim. The font is Hack, same as Konsole. Every key
+in it was checked against the colour IDs Ghidra 12.1.4 defines; an unknown key
+is ignored by Ghidra without a word, so that check is the only thing that
+catches a typo.
+
+Ghidra keeps settings per version under `~/.config/ghidra/ghidra_<ver>_<rel>/`
+and only creates that directory on first launch, so the module installs into
+every one that exists and skips on a box where Ghidra has never run. Start it
+once, then `./install.sh --only ghidra`.
+
+To change colours, edit the `color.custom.*` block at the top of the template
+and re-run the module. Ghidra's own **Edit → Theme → Configure** works too, but
+it saves into the installed copy, which the next install replaces (after
+backing it up).
+
+### Ghidra rewrites the file
+
+Importing or saving a theme makes Ghidra write it back sorted, with every
+comment gone. A byte comparison would call that copy drifted forever, so the
+module compares parsed `key=value` pairs instead, and `uninstall.sh` removes the
+file on the same test. That is also why it is copied rather than symlinked: a
+symlink would be rewritten into the repo, stripping the template's comments.
+
+### Selecting it
+
+`--apply-ghidra` sets `Theme=File\:<path>` in Ghidra's `preferences`, a Java
+properties file (hence the escaped colon). Ghidra rewrites that file on exit,
+so quit Ghidra first or it puts the old value back. Without the flag, pick it
+in **Edit → Theme → Switch…**.
 
 ## System monitor widget
 

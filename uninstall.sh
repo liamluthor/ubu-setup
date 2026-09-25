@@ -299,6 +299,54 @@ else
     esac
 fi
 
+head1 "ghidra theme"
+# The installed copy is not byte-comparable with the template — Ghidra
+# rewrites theme files, sorting keys and dropping comments — so it is matched
+# by the same parsed comparison the module installs with.
+# shellcheck source=modules/87-ghidra.sh
+. "$REPO_DIR/modules/87-ghidra.sh"
+_gh_found=0
+for _gd in "${XDG_CONFIG_HOME:-$HOME/.config}"/ghidra/ghidra_*/; do
+    [ -d "$_gd" ] || continue
+    _gd="${_gd%/}"
+    _gh_found=1
+    _gt="$_gd/themes/$GHIDRA_THEME_NAME.theme"
+    _gp="$_gd/preferences"
+
+    # Clear the selection BEFORE deleting the file. Ghidra pointed at a theme
+    # file that no longer exists logs an error on every launch; with no Theme
+    # key at all it quietly uses its default.
+    if [ -f "$_gp" ] && grep -qxF "Theme=File\\:$_gt" "$_gp"; then
+        backup "$_gp"
+        _gok=1
+        if [ "$DRY_RUN" = 1 ]; then
+            printf '  %s$ remove Theme from %s%s\n' "$C_DIM" "${_gp/#$HOME/\~}" "$C_OFF"
+        else
+            _tmp="$(mktemp)"
+            # grep -v exits 1 when it prints nothing, which is the normal
+            # outcome when Theme was the file's only line.
+            { grep -vxF "Theme=File\\:$_gt" "$_gp" > "$_tmp" || [ $? -eq 1 ]; } \
+                && mv "$_tmp" "$_gp" \
+                || { rm -f "$_tmp"; fail "edit ${_gp/#$HOME/\~}"; _gok=0; }
+        fi
+        [ "$_gok" = 1 ] && ok "${_gp/#$HOME/\~} no longer selects $GHIDRA_THEME_NAME"
+    else
+        skip "${_gp/#$HOME/\~} does not select $GHIDRA_THEME_NAME"
+    fi
+
+    if [ ! -f "$_gt" ]; then
+        skip "${_gt/#$HOME/\~} not present"
+    elif _ghidra_same_theme "$TEMPLATE_DIR/ghidra/$GHIDRA_THEME_NAME.theme" "$_gt"; then
+        run rm -f "$_gt" && ok "removed ${_gt/#$HOME/\~}"
+    else
+        skip "${_gt/#$HOME/\~} differs from the template — left alone"
+    fi
+done
+[ "$_gh_found" = 1 ] || skip "no ghidra settings directory"
+if _ghidra_running; then
+    warn "ghidra is running — quit it, or it writes the old Theme back on exit"
+fi
+
 head1 "system monitor widget"
 # Deleting the package while the applet is still on the desktop leaves
 # plasmashell rendering an error placeholder where the widget was, so take it
